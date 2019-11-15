@@ -80,3 +80,27 @@ install_collection 'mariadb-server' mariadb-server
 echo "----- Install ruby + build-essential ----------------"
 install_collection 'ruby, build-essential' ruby-full build-essential zlib1g-dev
 
+echo "----- Append ruby gems to ~/.bashrc -----------------"
+read -p 'Set GEM_HOME and append path with gems/bin? [y/N]: ' add_gems
+case $add_gems in
+    [Yy]* )
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'RUBY'
+
+# Install Ruby Gems to ~/gems
+export GEM_HOME="$HOME/gems"
+export PATH="$HOME/gems/bin:$PATH"
+
+RUBY
+) >> "$HOME/.bashrc"
+
+        echo "----- Done ------------------------------------------"
+        echo "to take effect now, you need to run:"
+        echo "source ~/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+

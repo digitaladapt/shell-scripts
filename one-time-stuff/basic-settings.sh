@@ -94,6 +94,6 @@ esac
 # ----------------------------------------------------------
 
 echo "----- Done ------------------------------------------"
-echo "to take effect now, you may need to run:"
+echo "to take effect now, you need to run:"
 echo "source ~/.bashrc"
 
