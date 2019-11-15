@@ -3,7 +3,7 @@
 # fetch-all.sh ~/project [~/second-project]
 
 function process_git_fetch () {
-    BOB=`pwd`
+    STARTED_IN=`pwd`
     for location in "$@"; do
         if [ -d "$location/.git" ]; then
             echo -n "----- git fetch $location "
@@ -13,7 +13,7 @@ function process_git_fetch () {
             git fetch --prune
         fi
     done
-    cd "$BOB"
+    cd "$STARTED_IN"
 }
 
 process_git_fetch "$@"
