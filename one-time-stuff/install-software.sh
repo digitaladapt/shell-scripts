@@ -52,8 +52,8 @@ function install_collection () {
 
 # ----------------------------------------------------------
 
-echo "----- Install extra utilities: ncdu, zip ------------"
-install_collection 'extra utilities' ncdu zip unzip
+echo "----- Install extra utilities: ncdu, zip, iftop -----"
+install_collection 'extra utilities' ncdu zip unzip iftop
 
 echo "----- Install nginx + php-fpm + certbot -------------"
 install_collection 'nginx, php-fpm, certbot' nginx certbot python-certbot-nginx php-cli php-fpm php-curl php-gd php-imagick php-intl php-json php-mbstring php-mysql php-redis php-soap php-xml php-yaml php-zip

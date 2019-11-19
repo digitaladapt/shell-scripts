@@ -34,6 +34,27 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Append default TERM to ~/.bashrc --------------"
+read -p 'Add "export TERM=screen-256color"? [y/N]: ' add_term
+case $add_term in
+    [Yy]* )
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'TERM'
+
+# ABS set term to something reasonable
+export TERM=screen-256color
+
+TERM
+) >> "$HOME/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Install vim configuration ---------------------"
 read -p 'Setup vim, colors, defaults, etc? [y/N]: ' set_vim
 case $set_vim in
