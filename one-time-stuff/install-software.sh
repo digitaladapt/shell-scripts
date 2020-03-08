@@ -55,8 +55,8 @@ function install_collection () {
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop
 
-echo "----- Install nginx + php-fpm + certbot -------------"
-install_collection 'nginx, php-fpm, certbot' nginx certbot python-certbot-nginx php-cli php-fpm php-curl php-gd php-imagick php-intl php-json php-mbstring php-mysql php-redis php-soap php-xml php-yaml php-zip
+echo "----- Install nginx + certbot -----------------------"
+install_collection 'nginx, certbot' nginx certbot python-certbot-nginx
 
 echo "----- Add nginx logging conf ------------------------"
 read -p 'Install the "tabbed_detailed" nginx log format? [y/N]: ' nginx_log
@@ -64,12 +64,17 @@ case $nginx_log in
     [Yy]* )
         LOCATION=`dirname "$0"`
         mkdir -p "/etc/nginx/conf.d"
+        mkdir -p "/etc/nginx/snippets"
         sudo cp "${LOCATION}/nginx/logging.conf" "/etc/nginx/conf.d/logging.conf"
+        sudo cp "${LOCATION}/nginx/cache-control.conf" "/etc/nginx/snippets/cache-control.conf"
         ;;
     * )
         echo 'Skipping'
         ;;
 esac
+
+echo "----- Install php-fpm -------------------------------"
+install_collection 'php-fpm' php-cli php-fpm php-curl php-gd php-imagick php-intl php-json php-mbstring php-mysql php-redis php-soap php-xml php-yaml php-zip
 
 echo "----- Install redis-server --------------------------"
 install_collection 'redis-server' redis-server
