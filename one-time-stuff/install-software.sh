@@ -52,6 +52,9 @@ function install_collection () {
 
 # ----------------------------------------------------------
 
+echo "----- Install core utilities: git, htop, jq, etc. ---"
+install_collection 'extra utilities' git htop jq grep gzip net-tools
+
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop
 
