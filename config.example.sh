@@ -1,4 +1,6 @@
-#!/bin/bash
+!/bin/bash
+
+DISCORD_SERVER_NAME="<YOUR SERVER>"
 
 DISCORD_GENERAL_HOOK="<WEBHOOK_URL_HERE>"
 

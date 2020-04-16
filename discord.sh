@@ -18,5 +18,5 @@ case $HOOK_ARG in
         ;;
 esac
 
-curl -s -H "Content-Type: application/json" -X POST -d "{\"content\": \"${MESSAGE}\"}" $HOOK_URL | jq -r '.id'
+curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": \"${MESSAGE}\"}" $HOOK_URL | jq -r '.id'
 
