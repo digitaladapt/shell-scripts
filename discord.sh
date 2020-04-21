@@ -1,6 +1,8 @@
 #!/bin/bash
 
-source config.sh
+LOCATION=`dirname "$0"`
+
+source "${LOCATION}/config.sh"
 
 HOOK_ARG="$1"
 MESSAGE="${@:2}"
