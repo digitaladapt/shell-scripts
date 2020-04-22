@@ -1,2 +1,3 @@
 /log/singleton.log
 /config.sh
+/crons/*.status

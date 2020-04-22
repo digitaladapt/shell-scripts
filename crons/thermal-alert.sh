@@ -4,12 +4,18 @@ LOCATION=`dirname "$0"`
 
 source "${LOCATION}/../config.sh"
 
-if (( `cat /sys/class/thermal/thermal_zone0/temp` > ( $THERMAL_ALERT * 1000 ) )); then
-    echo "thermal above ${THERMAL_ALERT} C"
-    source "${LOCATION}/../thermal.sh"
-    ${LOCATION}/../discord.sh thermal `${LOCATION}/../thermal.sh`
+thermal=`${LOCATION}/../thermal.sh ${THERMAL_ALERT}`
+alert=$?
+
+if [[ "0" != "${alert}" ]]; then
+    echo "${thermal}, above threshold ${THERMAL_ALERT} C"
+    ${LOCATION}/../discord.sh thermal "${thermal}, above threshold ${THERMAL_ALERT} C"
+    touch "${LOCATION}/thermal.status"
+elif [[ -f "${LOCATION}/thermal.status" ]]; then
+    rm "${LOCATION}/thermal.status"
+    echo "${thermal}, previously above threshold ${THERMAL_ALERT} C"
+    ${LOCATION}/../discord.sh thermal "${thermal}, previously above threshold ${THERMAL_ALERT} C"
 else
-    echo "thermal below ${THERMAL_ALERT} C"
-    source "${LOCATION}/../thermal.sh"
+    echo "${thermal}, below threshold ${THERMAL_ALERT} C"
 fi
 

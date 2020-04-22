@@ -2,6 +2,8 @@
 
 LOCATION=`dirname "$0"`
 
-source "${LOCATION}/../thermal.sh"
-${LOCATION}/../discord.sh thermal `${LOCATION}/../thermal.sh`
+thermal=`${LOCATION}/../thermal.sh`
+
+echo "${thermal}"
+${LOCATION}/../discord.sh thermal "${thermal}"
 
