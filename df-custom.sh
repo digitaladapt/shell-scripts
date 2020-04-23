@@ -1,24 +1,14 @@
 #!/bin/bash
 
+LOCATION=`dirname "$0"`
+
 if (( "0" == "$#" )); then
     device="/"
-
-    usage=`df --output=pcent $device | tail -n 1 | grep -oE '[0-9]+'`
-    open=`echo "100 - $usage" | bc`
-    avail=`df --output=avail -h $device | tail -n 1`
-
-    echo "Available: $avail ($open%) $device"
-
+    source "${LOCATION}/storage.sh" "$device"
     exit
 fi
 
 for device in "$@"; do
-
-    usage=`df --output=pcent $device | tail -n 1 | grep -oE '[0-9]+'`
-    open=`echo "100 - $usage" | bc`
-    avail=`df --output=avail -h $device | tail -n 1`
-
-    echo "Available: $avail ($open%) $device"
-
+    source "${LOCATION}/storage.sh" "$device"
 done
 
