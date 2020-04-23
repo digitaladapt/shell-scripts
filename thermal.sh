@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# this is currently specific to raspberry-pi
+# since that is the only kind of physical server I have
+# TODO make this work with all temp in class/thermal
 name=$(</sys/class/thermal/thermal_zone0/type)
 mc=$(</sys/class/thermal/thermal_zone0/temp)
 

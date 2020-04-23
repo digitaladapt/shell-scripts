@@ -5,6 +5,11 @@ THERMAL_ALERT=75
 
 STORAGE_MONITOR=("/")
 
+# must declare associated array explicitly
+declare -A STORAGE_ALERT
+# storage in GiB
+STORAGE_ALERT=(["/"]=5)
+
 SERVER_DOMAIN="localhost"
 
 DISCORD_SERVER_NAME="<YOUR SERVER>"
