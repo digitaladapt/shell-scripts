@@ -52,7 +52,7 @@ function install_collection () {
 
 # ----------------------------------------------------------
 
-echo "----- Install core utilities: fail2bqn, git, jq.. ---"
+echo "----- Install core utilities: fail2ban, git, jq.. ---"
 install_collection 'extra utilities' fail2ban git htop jq grep gzip net-tools
 
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
