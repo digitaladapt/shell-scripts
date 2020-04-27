@@ -10,6 +10,12 @@ declare -A STORAGE_ALERT
 # storage in GiB
 STORAGE_ALERT=(["/"]=5)
 
+# when set to 0, all backups are kept
+PRUNE_DOWN_TO=0
+
+# the directory with backups to cleanup
+PRUNE_DIRECTORY="/home/ubuntu/data"
+
 SERVER_DOMAIN="localhost"
 
 DISCORD_SERVER_NAME="<YOUR SERVER>"
