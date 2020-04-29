@@ -10,6 +10,8 @@ declare -A STORAGE_ALERT
 # storage in GiB
 STORAGE_ALERT=(["/"]=5)
 
+BACKUP_DIRECTORY="/home/ubuntu/data"
+
 # when set to 0, all backups are kept
 PRUNE_DOWN_TO=0
 
