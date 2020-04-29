@@ -10,7 +10,7 @@ backups=`find * -type f | sort | xargs du -h`
 echo "${backups}"
 ${LOCATION}/../discord.sh general "${backups}"
 
-hashes=`find * -type f | sort | xargs md5sum`
+hashes=`find * -type f | sort | xargs md5sum --tag`
 echo "${hashes}"
 ${LOCATION}/../discord.sh general "${hashes}"
 
