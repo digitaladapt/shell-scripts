@@ -8,3 +8,5 @@ set t_Co=256
 syntax enable
 colorscheme colorful256
 
+map <esc>OH <home>
+map <esc>OF <end>
