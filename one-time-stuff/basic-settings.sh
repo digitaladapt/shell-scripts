@@ -97,7 +97,8 @@ case $add_style in
         (
         cat << 'STYLE'
 
-# ABS prompt color dependent on hostname "purple", "orange", or neither                                                 if [[ $HOSTNAME == *purple* ]] ; then
+# ABS prompt color dependent on hostname "purple", "orange", or neither
+if [[ $HOSTNAME == *purple* ]] ; then
     PS1="\[\e[32m\]\u\[\e[m\]@\[\e[35m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 elif [[ $HOSTNAME == *orange* ]] ; then
     PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
