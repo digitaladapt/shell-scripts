@@ -97,11 +97,12 @@ case $add_style in
         (
         cat << 'STYLE'
 
-# ABS prompt color dependent on hostname containing "dev"
-if [[ $HOSTNAME == *dev* ]] ; then
-    PS1="\[\033[38;5;9m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;11m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\\$ \[$(tput sgr0)\]"
+# ABS prompt color dependent on hostname "purple", "orange", or neither                                                 if [[ $HOSTNAME == *purple* ]] ; then
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[35m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
+elif [[ $HOSTNAME == *orange* ]] ; then
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 else
-    PS1="\[\033[38;5;10m\]\u\[$(tput sgr0)\]\[\033[38;5;15m\]@\[$(tput sgr0)\]\[\033[38;5;11m\]\h\[$(tput sgr0)\]\[\033[38;5;15m\]:\[$(tput sgr0)\]\[\033[38;5;14m\]\w\[$(tput sgr0)\]\\$ \[$(tput sgr0)\]"
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[33;40m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 fi
 
 STYLE
