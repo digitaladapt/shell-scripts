@@ -103,7 +103,7 @@ if [[ $HOSTNAME == *purple* ]] ; then
 elif [[ $HOSTNAME == *orange* ]] ; then
     PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 else
-    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[33;40m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[33m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 fi
 
 STYLE
