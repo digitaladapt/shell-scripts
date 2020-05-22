@@ -98,12 +98,19 @@ case $add_style in
         cat << 'STYLE'
 
 # ABS prompt color dependent on hostname "purple", "orange", or neither
+my_host="$HOSTNAME"
+my_host="${my_host/orange/🍊}"
+my_host="${my_host/oracle/🔮}"
+my_host="${my_host/purple/💜}"
+my_host="${my_host/pi/🥧}"
+my_host="${my_host/yellow/🟨}"
+my_host="${my_host/media/📀}"
 if [[ $HOSTNAME == *purple* ]] ; then
-    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[35m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[35m\]$my_host\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 elif [[ $HOSTNAME == *orange* ]] ; then
-    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[31m\]$my_host\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 else
-    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[33m\]\h\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[33m\]$my_host\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 fi
 
 STYLE
