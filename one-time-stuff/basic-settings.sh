@@ -34,6 +34,27 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Add gittree alias to ~/.bashrc ----------------"
+read -p 'Add "alias gittree"? [y/N]: ' add_alias
+case $add_alias in
+    [Yy]* )
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'TERM'
+
+# ABS gittree alias
+alias gittree='git log --all --decorate --oneline --graph'
+
+TERM
+) >> "$HOME/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Append default TERM to ~/.bashrc --------------"
 read -p 'Add "export TERM=screen-256color"? [y/N]: ' add_term
 case $add_term in
