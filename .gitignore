@@ -1,3 +1,4 @@
 /log/singleton.log
 /config.sh
 /crons/*.status
+/distinct/*.msg
