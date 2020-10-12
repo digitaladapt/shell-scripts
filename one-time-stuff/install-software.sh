@@ -59,7 +59,7 @@ echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop
 
 echo "----- Install nginx + certbot -----------------------"
-install_collection 'nginx, certbot' nginx certbot python-certbot-nginx
+install_collection 'nginx, certbot' nginx certbot python3-certbot-nginx
 
 echo "----- Add nginx logging conf ------------------------"
 read -p 'Install the "tabbed_detailed" nginx log format? [y/N]: ' nginx_log
