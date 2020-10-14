@@ -77,7 +77,7 @@ case $nginx_log in
 esac
 
 echo "----- Install php-fpm -------------------------------"
-install_collection 'php-fpm' php-cli php-fpm php-curl php-gd php-imagick php-intl php-json php-mbstring php-mysql php-redis php-soap php-xml php-yaml php-zip
+install_collection 'php-fpm' php-cli php-fpm php-bcmath php-curl php-gd php-gmp php-imagick imagemagick php-intl php-json php-mbstring php-mysql php-redis php-soap php-xml php-yaml php-zip
 
 echo "----- Install redis-server --------------------------"
 install_collection 'redis-server' redis-server

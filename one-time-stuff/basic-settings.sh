@@ -124,8 +124,7 @@ my_host="${my_host/orange/🍊}"
 my_host="${my_host/oracle/🔮}"
 my_host="${my_host/purple/💜}"
 my_host="${my_host/pi/🥧}"
-my_host="${my_host/yellow/🟨}"
-my_host="${my_host/media/📀}"
+my_host="${my_host/stash/🎒♾}"
 if [[ $HOSTNAME == *purple* ]] ; then
     PS1="\[\e[32m\]\u\[\e[m\]@\[\e[35m\]$my_host\[\e[m\]:\[\e[36m\]\w\[\e[m\]\\$ "
 elif [[ $HOSTNAME == *orange* ]] ; then
