@@ -1,0 +1,8 @@
+# comment
+
+date-format %d/%b/%Y
+
+time-format %H:%M:%S
+
+log-format %h\t%e\t[%d:%t %^]\t(%K/%k)\t%v\t"%r"\t%s\t%b\t"%R"\t"%u"
+

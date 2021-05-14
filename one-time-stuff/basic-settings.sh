@@ -110,6 +110,21 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Install GoAccess configuration ----------------"
+read -p 'Add GoAccess RC config file? [y/N]: ' set_gorc
+case $set_gorc in
+    [Yy]* )
+        echo 'Installing GoAccess RC'
+        LOCATION=`dirname "$0"`
+        cp "${LOCATION}/conf/goaccessrc" "${HOME}/.goaccessrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Append prompt style to ~/.bashrc --------------"
 read -p 'Add prompt style to bash config? [y/N]: ' add_style
 case $add_style in
