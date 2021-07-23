@@ -4,4 +4,5 @@
 #dig +short A myip.opendns.com @resolver1.opendns.com
 
 curl https://ipinfo.io/ip
+echo ""
 
