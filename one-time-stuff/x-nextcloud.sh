@@ -28,7 +28,7 @@ if [[ -z "$dir_name" ]]; then
     dir_name='/var/www/nextcloud'
 fi
 
-public_ip=`${LOCATION}/../public-ip.sh`
+public_ip=`${LOCATION}/../4-public-ip.sh`
 echo "----- Set NextCloud Domain --------------------------"
 read -p "Domain (defaults to public-ip '${public_ip}'): " domain_name
 if [[ -z "$domain_name" ]]; then
