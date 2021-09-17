@@ -10,6 +10,10 @@ HOOK="general"
 HOOK_URL=$DISCORD_GENERAL_HOOK
 
 case $HOOK_ARG in
+    live)
+        HOOK="thermal"
+        HOOK_URL=$DISCORD_THERMAL_HOOK
+        ;;
     thermal)
         HOOK="thermal"
         HOOK_URL=$DISCORD_THERMAL_HOOK
