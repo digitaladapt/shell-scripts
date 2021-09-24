@@ -55,25 +55,46 @@ esac
 
 # ----------------------------------------------------------
 
-echo "----- Append default TERM to ~/.bashrc --------------"
-read -p 'Add "export TERM=screen-256color"? [y/N]: ' add_term
-case $add_term in
+echo "----- Auto save screen layout? edits ~/.screenrc ----"
+read -p 'Add "layour save default" to screen config? [y/N]: ' add_layout
+case $add_layout in
     [Yy]* )
-        echo 'Appending ~/.bashrc'
+        echo 'Appending ~/.screenrc'
         (
         cat << 'TERM'
 
-# ABS set term to something reasonable
-export TERM=screen-256color
+# ABS detach and re-attach without losing layout
+layout save default
 
 TERM
-) >> "$HOME/.bashrc"
+) >> "$HOME/.screenrc"
         ;;
     * )
         echo 'Skipping'
         ;;
 esac
 
+# ----------------------------------------------------------
+#
+#echo "----- Append default TERM to ~/.bashrc --------------"
+#read -p 'Add "export TERM=screen-256color"? [y/N]: ' add_term
+#case $add_term in
+#    [Yy]* )
+#        echo 'Appending ~/.bashrc'
+#        (
+#        cat << 'TERM'
+#
+## ABS set term to something reasonable
+#export TERM=screen-256color
+#
+#TERM
+#) >> "$HOME/.bashrc"
+#        ;;
+#    * )
+#        echo 'Skipping'
+#        ;;
+#esac
+#
 # ----------------------------------------------------------
 
 echo "----- Install vim configuration ---------------------"
