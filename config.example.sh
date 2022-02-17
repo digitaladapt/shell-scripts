@@ -1,7 +1,10 @@
-!/bin/bash
+#!/bin/bash
 
 # degrees in C
 THERMAL_ALERT=75
+
+# see: /sys/class/thermal/thermal_zone*
+THERMAL_ZONE=0
 
 STORAGE_MONITOR=("/")
 
