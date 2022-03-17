@@ -11,6 +11,10 @@ HOOK="general"
 HOOK_URL=$DISCORD_GENERAL_HOOK
 
 case $HOOK_ARG in
+    restake)
+        HOOK="restake"
+        HOOK_URL=$DISCORD_RESTAKE_HOOK
+        ;;
     thermal)
         HOOK="thermal"
         HOOK_URL=$DISCORD_THERMAL_HOOK

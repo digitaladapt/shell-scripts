@@ -10,9 +10,9 @@ HOOK="general"
 HOOK_URL=$DISCORD_GENERAL_HOOK
 
 case $HOOK_ARG in
-    live)
-        HOOK="thermal"
-        HOOK_URL=$DISCORD_THERMAL_HOOK
+    restake)
+        HOOK="restake"
+        HOOK_URL=$DISCORD_RESTAKE_HOOK
         ;;
     thermal)
         HOOK="thermal"
