@@ -42,7 +42,7 @@ function install_collection () {
                 called_update=true
             fi
             echo "Installing $1"
-            sudo apt install "${@:2}"
+            sudo apt install "${@:2}" -y
             ;;
         * )
             echo 'Skipping'
@@ -70,6 +70,20 @@ case $nginx_log in
         mkdir -p "/etc/nginx/snippets"
         sudo cp "${LOCATION}/nginx/logging.conf" "/etc/nginx/conf.d/logging.conf"
         sudo cp "${LOCATION}/nginx/cache-control.conf" "/etc/nginx/snippets/cache-control.conf"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+echo "----- Install Go Lang -------------------------------"
+read -p 'Install Go Lang? [y/N]: ' go_lang
+case $go_lang in
+    [Yy]* )
+        echo "----- Calling Go Install Script ---------------------"
+        LOCATION=`dirname "$0"`
+        "${LOCATION}/../golang-install/goinstall.sh"
+        echo "----- Completed Go Install Script -------------------"
         ;;
     * )
         echo 'Skipping'
