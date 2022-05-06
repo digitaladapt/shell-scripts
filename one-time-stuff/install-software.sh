@@ -53,7 +53,7 @@ function install_collection () {
 # ----------------------------------------------------------
 
 echo "----- Install core utilities: curl, vim, git, jq.. ---"
-install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim
+install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc
 
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop
