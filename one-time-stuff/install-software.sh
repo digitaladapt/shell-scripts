@@ -76,6 +76,20 @@ case $nginx_log in
         ;;
 esac
 
+echo "----- Install NodeJS 16 -----------------------------"
+read -p 'Install NodeJS 16? [y/N]: ' node_lang
+case $node_lang in
+    [Yy]* )
+        echo "----- Calling NodeJS Install Script -----------------"
+        LOCATION=`dirname "$0"`
+        sudo "${LOCATION}/../nodejs-install/nodesource_setup.sh"
+        echo "----- Completed NodeJS Install Script ---------------"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
 echo "----- Install Go Lang -------------------------------"
 read -p 'Install Go Lang? [y/N]: ' go_lang
 case $go_lang in
