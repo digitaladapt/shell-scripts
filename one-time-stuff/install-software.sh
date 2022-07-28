@@ -83,6 +83,7 @@ case $node_lang in
         echo "----- Calling NodeJS Install Script -----------------"
         LOCATION=`dirname "$0"`
         sudo "${LOCATION}/../nodejs-install/nodesource_setup.sh"
+        sudo apt install nodejs -y
         echo "----- Completed NodeJS Install Script ---------------"
         ;;
     * )
