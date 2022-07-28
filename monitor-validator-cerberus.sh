@@ -10,7 +10,7 @@ fi
 
 echo -n "${missed_blocks},"
 
-if [ -z `date | grep ':00:'` ]; then
+if [ `date | grep -c ':00:'` -gt 0 ]; then
     echo ""
     date
 fi
