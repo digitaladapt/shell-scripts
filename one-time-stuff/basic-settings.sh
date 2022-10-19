@@ -146,6 +146,29 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Download Git Prompt Script --------------------"
+read -p 'Add git prompt to bash config? [y/N]: ' set_prompt
+case $set_prompt in
+    [Yy]* )
+        echo 'Downloading Git Prompt'
+        LOCATION=`dirname "$0"`
+        [ ! -d "${HOME}/bin" ] && mkdir "${HOME}/bin"
+        wget 'https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh' -O "${HOME}/bin/git-prompt.sh" -q && ( cat << 'PROMPT'
+
+# ABS git prompt
+source ~/bin/git-prompt.sh
+
+PROMPT
+) >> "${HOME}/.bashrc"
+        chmod +x "${HOME}/bin/git-prompt.sh"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Append prompt style to ~/.bashrc --------------"
 read -p 'Add prompt style to bash config? [y/N]: ' add_style
 case $add_style in
@@ -155,7 +178,11 @@ case $add_style in
         cat << 'STYLE'
 
 # ABS prompt color
-PS1="\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]\\$ "
+if [ "$(type -t __git_ps1)" == 'function' ]; then
+    PS1='\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]$(__git_ps1 "\e[m\](\e[35m\]%s\e[m\])")\e[m\]\\$ '
+else
+    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]\\$ "
+fi
 
 STYLE
 ) >> "$HOME/.bashrc"
