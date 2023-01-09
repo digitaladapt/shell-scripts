@@ -179,7 +179,7 @@ case $add_style in
 
 # ABS prompt color
 if [ "$(type -t __git_ps1)" == 'function' ]; then
-    PS1='\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]$(__git_ps1 "\e[m\](\e[35m\]%s\e[m\])")\e[m\]\\$ '
+    PS1='\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]$(__git_ps1 "\[\e[m\](\[\e[35m\]%s\[\e[37m\])")\[\e[m\]\\$ '
 else
     PS1="\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]\\$ "
 fi
