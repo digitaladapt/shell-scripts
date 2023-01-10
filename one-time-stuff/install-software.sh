@@ -76,8 +76,8 @@ case $nginx_log in
         ;;
 esac
 
-echo "----- Install NodeJS 16 -----------------------------"
-read -p 'Install NodeJS 16? [y/N]: ' node_lang
+echo "----- Install NodeJS 18 -----------------------------"
+read -p 'Install NodeJS 18? [y/N]: ' node_lang
 case $node_lang in
     [Yy]* )
         echo "----- Calling NodeJS Install Script -----------------"

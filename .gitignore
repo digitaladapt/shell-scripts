@@ -2,3 +2,4 @@
 /config.sh
 /crons/*.status
 /distinct/*.msg
+/git-prompt.sh
