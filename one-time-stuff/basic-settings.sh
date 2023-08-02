@@ -108,6 +108,8 @@ case $set_vim in
 # ABS default to using vim
 export EDITOR=vim
 export VISUAL=vim
+# ABS less to render tabs as 4 characters
+export LESS=Rx4
 
 VIM
 ) >> "$HOME/.bashrc"
