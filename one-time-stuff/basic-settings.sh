@@ -18,6 +18,16 @@ else
     echo 'Skipping'
 fi
 
+read -p 'Set pager to display short output directly? [y/N]: ' set_pager
+case $set_pager in
+    [Yy]* )
+        git config --global core.pager "less -X -F"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
 # ----------------------------------------------------------
 
 echo "----- User Groups (requires sudo) -------------------"
