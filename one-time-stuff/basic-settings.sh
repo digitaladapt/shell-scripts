@@ -28,6 +28,16 @@ case $set_pager in
         ;;
 esac
 
+read -p 'Set git default branch name to "main"? [y/N]: ' set_branch
+case $set_branch in
+    [Yy]* )
+        git config --global init.defaultBranch main
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
 # ----------------------------------------------------------
 
 echo "----- User Groups (requires sudo) -------------------"
