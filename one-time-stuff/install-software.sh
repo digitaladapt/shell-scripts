@@ -1,32 +1,32 @@
 #!/bin/bash
 # install common software, will prompt before each step
 
-echo "----- Use nginx straight from nginx.org -------------"
-read -p 'Add nginx.org to apt source list? [y/N]: ' add_nginx
-case $add_nginx in
-    [Yy]* )
-        echo 'Adding nginx.org'
-        # check that such a distro/release exists on nginx.org
-        distro=`lsb_release -i -s | tr '[:upper:]' '[:lower:]'`
-        release=`lsb_release -c -s`
-        http_code=`curl -s -o /dev/null --connect-timeout 0.5 -I -w "%{http_code}" "https://nginx.org/packages/$distro/dists/$release/nginx/"`
-        if [[ "$http_code" == "200" ]]; then
-            (
-            cat << NGINX
-deb https://nginx.org/packages/$distro/ $release nginx
-deb-src https://nginx.org/packages/$distro/ $release nginx
-NGINX
-) | sudo tee /etc/apt/sources.list.d/nginx.list
-
-            curl -L https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
-        else
-            echo "nginx.org appears to be missing $distro/$release"
-        fi
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
+#echo "----- Use nginx straight from nginx.org -------------"
+#read -p 'Add nginx.org to apt source list? [y/N]: ' add_nginx
+#case $add_nginx in
+#    [Yy]* )
+#        echo 'Adding nginx.org'
+#        # check that such a distro/release exists on nginx.org
+#        distro=`lsb_release -i -s | tr '[:upper:]' '[:lower:]'`
+#        release=`lsb_release -c -s`
+#        http_code=`curl -s -o /dev/null --connect-timeout 0.5 -I -w "%{http_code}" "https://nginx.org/packages/$distro/dists/$release/nginx/"`
+#        if [[ "$http_code" == "200" ]]; then
+#            (
+#            cat << NGINX
+#deb https://nginx.org/packages/$distro/ $release nginx
+#deb-src https://nginx.org/packages/$distro/ $release nginx
+#NGINX
+#) | sudo tee /etc/apt/sources.list.d/nginx.list
+#
+#            curl -L https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
+#        else
+#            echo "nginx.org appears to be missing $distro/$release"
+#        fi
+#        ;;
+#    * )
+#        echo 'Skipping'
+#        ;;
+#esac
 
 # ----------------------------------------------------------
 
@@ -53,7 +53,7 @@ function install_collection () {
 # ----------------------------------------------------------
 
 echo "----- Install core utilities: curl, vim, git, jq.. ---"
-install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc
+install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools
 
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop colorized-logs php-cli ca-certificates curl gnupg lsb-release
