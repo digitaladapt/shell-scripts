@@ -75,6 +75,67 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Setup robust bash history? in ~/.bashrc -------"
+read -p 'split bash history by tty in realtime? [y/N]: ' add_history
+case $add_history in
+    [Yy]* )
+        echo 'backing up ~/.bashrc'
+        cp "$HOME/.bashrc" "$HOME/.bashrc.backup"
+
+        echo 'commenting out existing bash history config'
+        sed -i '/^\(HISTCONTROL\|HISTFILESIZE\|HISTFILE\|HISTIGNORE\|HISTSIZE\|HISTTIMEFORMAT\|shopt -s histappend\|shopt -s histreedit\|shopt -s histverify\)/s/^/# ABS #/' "$HOME/.bashrc"
+
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'TERM'
+
+# ABS improved shell history
+shopt -s histappend         # append to the history file, don't overwrite it
+HISTSIZE=10000              # cache    the last  10,000 commands
+HISTFILESIZE=100000         # remember the last 100,000 commands
+HISTCONTROL="ignoredups"    # ignore duplicates
+HISTIGNORE="l:la:ll:ls *:clear:history:pwd" # ignore select simple commands
+HISTFILE="${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"    # bash_history as folder split by tty
+
+# if we have already sourced this file, don't do it again
+if [[ "${PROMPT_COMMAND}" != *"history"* ]]; then
+    # append history as you go
+    PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND/%;};}history -a"
+    # also, build a history of other ttys
+    ls "${HOME}/.bash_history/"* | grep -v "${HOME}/.bash_history/others" | grep -v "${HISTFILE}" | xargs cat > "${HOME}/.bash_history/others"
+    # then read from the other ttys history, so our history is complete
+    history -n "${HOME}/.bash_history/others"
+fi
+
+TERM
+) >> "$HOME/.bashrc"
+
+        echo 'move existing history file'
+        mv "$HISTFILE" "$HOME/tmp_hist_file"
+        mkdir "${HOME}/.bash_history"
+        mv "$HOME/tmp_hist_file" "${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"
+
+        echo 'update live config'
+        shopt -s histappend
+        shopt -u histreedit
+        shopt -u histverify
+        export HISTSIZE=10000
+        export HISTFILESIZE=100000
+        export HISTCONTROL="ignoredups"
+        export HISTIGNORE="l:la:ll:ls *:clear:history:pwd"
+        export HISTFILE="${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"
+        if [[ "${PROMPT_COMMAND}" != *"history"* ]]; then
+            export PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND/%;};}history -a"
+        fi
+
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Auto save screen layout? edits ~/.screenrc ----"
 read -p 'Add "layour save default" to screen config? [y/N]: ' add_layout
 case $add_layout in
