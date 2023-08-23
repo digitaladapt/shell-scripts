@@ -79,10 +79,10 @@ echo "----- Setup robust bash history? in ~/.bashrc -------"
 read -p 'split bash history by tty in realtime? [y/N]: ' add_history
 case $add_history in
     [Yy]* )
-        echo 'backing up ~/.bashrc'
+        echo 'Backing up ~/.bashrc'
         cp "$HOME/.bashrc" "$HOME/.bashrc.backup"
 
-        echo 'commenting out existing bash history config'
+        echo 'Comment existing history config'
         sed -i '/^\(HISTCONTROL\|HISTFILESIZE\|HISTFILE\|HISTIGNORE\|HISTSIZE\|HISTTIMEFORMAT\|shopt -s histappend\|shopt -s histreedit\|shopt -s histverify\)/s/^/# ABS #/' "$HOME/.bashrc"
 
         echo 'Appending ~/.bashrc'
@@ -110,12 +110,14 @@ fi
 TERM
 ) >> "$HOME/.bashrc"
 
-        echo 'move existing history file'
-        mv "$HISTFILE" "$HOME/tmp_hist_file"
+        echo 'Move existing history file'
+        if [ -f "${HOME}/.bash_history" ]; then
+            mv "${HOME}/.bash_history" "$HOME/tmp_hist_file"
+        fi
         mkdir "${HOME}/.bash_history"
         mv "$HOME/tmp_hist_file" "${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"
 
-        echo 'update live config'
+        echo 'Update live config'
         shopt -s histappend
         shopt -u histreedit
         shopt -u histverify
