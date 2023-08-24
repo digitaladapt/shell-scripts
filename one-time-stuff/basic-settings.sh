@@ -38,6 +38,16 @@ case $set_branch in
         ;;
 esac
 
+read -p 'Enable git credential helper to cache? [y/N]: ' set_cache
+case $set_cache in
+    [Yy]* )
+        git config --global credential.helper cache
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
 # ----------------------------------------------------------
 
 echo "----- User Groups (requires sudo) -------------------"
