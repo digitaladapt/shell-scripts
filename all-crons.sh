@@ -12,7 +12,8 @@ if [ -z "$FILENAME" ]; then
     FILENAME='crontasks.sh'
 fi
 
-echo "#!/bin/bash\n" > "$FILENAME"
+echo "#!/bin/bash" > "$FILENAME"
+echo "" >> "$FILENAME"
 
 # list crontab, remove comments and empty lines,
 # expect cron time formatting to be the first 20 characters,
