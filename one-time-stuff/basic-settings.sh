@@ -104,7 +104,7 @@ shopt -s histappend         # append to the history file, don't overwrite it
 HISTSIZE=10000              # cache    the last  10,000 commands
 HISTFILESIZE=100000         # remember the last 100,000 commands
 HISTCONTROL="ignoredups"    # ignore duplicates
-HISTIGNORE="l:la:ll:ls *:clear:history:pwd" # ignore select simple commands
+HISTIGNORE="l:la:ll:ls:cd:clear:history:pwd" # ignore select simple commands
 HISTFILE="${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"    # bash_history as folder split by tty
 
 # if we have already sourced this file, don't do it again
