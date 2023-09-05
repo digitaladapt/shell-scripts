@@ -91,6 +91,21 @@ case $node_lang in
         ;;
 esac
 
+echo "----- Install NodeJS Apps Yarn and HttpServer -------"
+read -p 'Install NodeJS Apps "yarn" and "http-server" globally? [y/N]: ' node_more
+case $node_more in
+    [Yy]* )
+        echo "----- Installing NodeJS 'yarn' globally -------------"
+        sudo npm install --global yarn
+        echo "----- Installing NodeJS 'http-server' globally ------"
+        sudo npm install --global http-server
+        echo "----- Completed NodeJS Apps -------------------------"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
 echo "----- Install Go Lang -------------------------------"
 read -p 'Install Go Lang? [y/N]: ' go_lang
 case $go_lang in
