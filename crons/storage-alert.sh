@@ -11,11 +11,11 @@ for index in "${!STORAGE_ALERT[@]}"; do
 
     if [[ "0" != "${alert}" ]]; then
         echo "${storage} is below threshold ${STORAGE_ALERT[$index]}G"
-        ${LOCATION}/../discord-if-distinct.sh storage "storage-${COUNT}" "${storage} is below threshold ${STORAGE_ALERT[$index]}G"
+        ${LOCATION}/../discord-if-distinct.sh block "storage-${COUNT}" "${storage} is below threshold ${STORAGE_ALERT[$index]}G"
     else
         echo "${storage} is above threshold ${STORAGE_ALERT[$index]}G"
 
-        ${LOCATION}/../discord-if-distinct.sh storage "storage-${COUNT}" "${storage} is above threshold ${STORAGE_ALERT[$index]}G"
+        ${LOCATION}/../discord-if-distinct.sh block "storage-${COUNT}" "${storage} is above threshold ${STORAGE_ALERT[$index]}G"
     fi
 
     let "COUNT++"

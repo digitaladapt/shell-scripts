@@ -59,7 +59,22 @@ echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop colorized-logs php-cli ca-certificates curl gnupg lsb-release
 
 echo "----- Install nginx + certbot -----------------------"
-install_collection 'nginx, certbot' nginx certbot python3-certbot-nginx
+read -p 'Install nginx, and python3-pip, then install via pip certbot, certbot-nginx, and certbot-dns-google-domain? [y/N]: ' nginx_install
+case $nginx_install in
+    [Yy]* )
+        if [ $called_update = false ]; then
+            echo "Updating APT before Installing"
+            sudo apt update
+            called_update=true
+        fi
+        echo "Installing nginx python3-pip"
+        sudo apt install nginx python3-pip -y
+        sudo pip install certbot certbot-nginx certbot-dns-google-domains
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
 
 echo "----- Add nginx logging conf ------------------------"
 read -p 'Install the "tabbed_detailed" nginx log format? [y/N]: ' nginx_log
