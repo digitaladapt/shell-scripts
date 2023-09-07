@@ -15,11 +15,14 @@ STORAGE_ALERT=(["/"]=5)
 
 BACKUP_DIRECTORY="/home/ubuntu/data"
 
-# when set to 0, all backups are kept
-PRUNE_DOWN_TO=0
-
 # the directory with backups to cleanup
 PRUNE_DIRECTORY="/home/ubuntu/data"
+
+# what type of backups to cleanup (what to find) "*.zip" etc, or "<DIR>"
+PRUNE_TYPE="<DIR>"
+
+# when set to 0, all backups are kept
+PRUNE_DOWN_TO=0
 
 SERVER_DOMAIN="localhost"
 
