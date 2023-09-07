@@ -34,29 +34,33 @@ if [ -n "$3" ]; then
 fi
 
 if (( "${keepCount}" > "0" )); then
-    removedSome=0
+    removeCount=0
 
     # find direct subfolders to remove
     if [ "${pruneType}" = "<DIR>" ]; then
         # notice the grep to remove the pruneDir from the results
         # head given a negative number will stop that much short from the bottom, so we keep those matches
-        find "${pruneDir}" -maxdepth 1 -type d | grep -v "^${pruneDir}$" | sort | head -n "-${keepCount}" | while read -r dirToRemove; do
-            removedSome=1
+        while read -r dirToRemove; do
+            if [ -z "${dirToRemove}" ]; then break; fi
+            removeCount=$((removeCount+1))
             echo "Removing: ${dirToRemove}"
             rm -r "${dirToRemove}"
-        done
+        done <<< `find "${pruneDir}" -maxdepth 1 -type d | grep -v "^${pruneDir}$" | sort | head -n "-${keepCount}"`
     else
         # head given a negative number will stop that much short from the bottom, so we keep those matches
-        find "${pruneDir}" -type f -name "${pruneType}" | sort | head -n "-${keepCount}" | while read -r fileToRemove; do
-            removedSome=1
+        while read -r fileToRemove; do
+            if [ -z "${fileToRemove}" ]; then break; fi
+            removeCount=$((removeCount+1))
             echo "Removing: ${fileToRemove}"
             rm "${fileToRemove}"
-        done
+        done <<< `find "${pruneDir}" -type f -name "${pruneType}" | sort | head -n "-${keepCount}"`
     fi
 
-if [ "${removedSome}" = "0" ]; then
-    echo 'Nothing to do, we do not have too many backups.'
-fi
+    if (( $removeCount > 0 )); then
+        echo "Successfully removed ${removeCount} extra backups."
+    else
+        echo 'Nothing to do, we do not have too many backups.'
+    fi
 else
     echo 'Nothing to do, you said keep everything.'
 fi
