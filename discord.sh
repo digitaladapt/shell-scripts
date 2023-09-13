@@ -14,7 +14,17 @@ EXTRA="${MESSAGE:1800}"
 
 if [ -n "${EXTRA}" ]; then
     MESSAGE="${MESSAGE:0:1800}"
+
+    # as an added elegance, when spliting into pieces, find the last \n newline,
+    # and break there instead, but only if the new smaller chunk is of sufficient size
+    chunk1=`echo "$MESSAGE" | head -n -1`
+    chunks=`echo "$MESSAGE" | tail -n 1`
+    if (( "${#chunk1}" >= 1000 )); then
+        MESSAGE="$chunk1"
+        EXTRA="${chunks}${EXTRA}"
+    fi
 fi
+
 
 # sed: rewrite json string, because "\u001b[m" needs to "\u001b[0m" instead
 # linux is fine with the missing zero, but discord needs it
