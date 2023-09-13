@@ -86,7 +86,7 @@ esac
 # ----------------------------------------------------------
 
 echo "----- Add symlink for ssh-ident as ssh --------------"
-read -p 'Add "ssh alias for ssh-ident"? [y/N]: ' add_ident
+read -p 'Add "ssh alias for ssh-ident"? (REQUIRES python) [y/N]: ' add_ident
 case $add_ident in
     [Yy]* )
         echo 'Creating ssh symlink to ssh-ident'
