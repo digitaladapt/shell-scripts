@@ -3,3 +3,4 @@
 /crons/*.status
 /distinct/*.msg
 /git-prompt.sh
+/ssh

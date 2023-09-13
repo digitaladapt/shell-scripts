@@ -85,6 +85,21 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Add symlink for ssh-ident as ssh --------------"
+read -p 'Add "ssh alias for ssh-ident"? [y/N]: ' add_ident
+case $add_ident in
+    [Yy]* )
+        echo 'Creating ssh symlink to ssh-ident'
+        LOCATION=`dirname "$0"`
+        (cd "${LOCATION}/.."  && ln -s "ccontavalli-ssh-ident/ssh-ident" "ssh")
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Setup robust bash history? in ~/.bashrc -------"
 read -p 'split bash history by tty in realtime? [y/N]: ' add_history
 case $add_history in
