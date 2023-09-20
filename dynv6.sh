@@ -2,6 +2,7 @@
 
 hostname=$1
 device=$2
+scope=$3
 
 file4="$HOME/.dynv6.addr4"
 file6="$HOME/.dynv6.addr6"
@@ -11,13 +12,20 @@ file6="$HOME/.dynv6.addr6"
 
 # ensure we have required information
 if [ -z "$hostname" -o -z "$token" ]; then
-    echo "Usage: token=<your-authentication-token> [netmask=64] $0 your-name.dynv6.net [device]"
+    echo "Usage: token=<your-authentication-token> [netmask=64] $0 your-name.dynv6.net [device] [scope]"
     exit 1
 fi
 
 # [device] would be something like "eth0" or "wlan0"
 if [ -n "$device" ]; then
     device="dev $device"
+fi
+
+# [scope] normally "global", but "link" can be useful in select proxy cases (such as wsl)
+if [ -n "$scope" ]; then
+    scope="scope $scope"
+else
+    scope="scope global"
 fi
 
 # what command should we use to call the API
@@ -45,7 +53,7 @@ if [ -z "$ipv4" ]; then
 fi
 
 # calculate IPv6
-address6=$(ip -6 addr list scope global $device | grep -v " fd" | sed -n 's/.*inet6 \([0-9a-f:]\+\).*/\1/p' | head -n 1)
+address6=$(ip -6 addr list $scope $device | grep -v " fd" | sed -n 's/.*inet6 \([0-9a-f:]\+\).*/\1/p' | head -n 1)
 
 if [ -z "$address6" ]; then
     echo "no IPv6 address found"
@@ -63,7 +71,7 @@ if [ "$old4" = "$ipv4" ]; then
     echo "IPv4 address unchanged"
 else
     echo -n "Updating IPv4: "
-    $bin "https://ipv4.dynv6.com/api/update?hostname=$hostname&ipv4=$ipv4&token=$token"
+    $bin "https://dynv6.com/api/update?hostname=$hostname&ipv4=$ipv4&token=$token"
     echo ""
 
     # save current address
@@ -76,7 +84,7 @@ if [ "$old6" = "$ipv6" ]; then
 else
     # send addresses to dynv6
     echo -n "Updating IPv6: "
-    $bin "https://ipv6.dynv6.com/api/update?hostname=$hostname&ipv6=$ipv6&token=$token"
+    $bin "https://dynv6.com/api/update?hostname=$hostname&ipv6=$ipv6&token=$token"
     echo ""
 
     # save current address
