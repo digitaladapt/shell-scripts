@@ -59,8 +59,8 @@ param(
     [string] $token = $(throw "-token is required"),
     [string] $netmask = "128",
     [string] $logfile = "$env:USERPROFILE\\.dynv6.log",
-    [string] $ipv4 = $null,
-    [string] $ipv6 = $null
+    [string] $ipv4 = "",
+    [string] $ipv6 = ""
 )
 
 # we store ip addresses in files, so we only update when there is a change
@@ -88,12 +88,12 @@ $update6 = [System.Uri]'https://dynv6.com/api/update'
 Get-Date | Tee-Object -FilePath $logfile -Append | Out-Host
 
 # lookup IPv4, will be skipped if variable already set
-if ($ipv4 -eq $null) {
+if ($ipv4 -eq "") {
     $ipv4 = Invoke-RestMethod -Method Get -Uri $lookup4
 }
 
 # lookup IPv6, will be skipped if variable already set
-if ($ipv6 -eq $null) {
+if ($ipv6 -eq "") {
     $ipv6 = Invoke-RestMethod -Method Get -Uri $lookup6
 }
 
