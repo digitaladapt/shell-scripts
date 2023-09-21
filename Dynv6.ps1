@@ -53,17 +53,21 @@
 # IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ###################
 
-
+# we need zone and token, we also accept, netmask, and overrides
 param(
     [string] $zone = $(throw "-zone is required"),
     [string] $token = $(throw "-token is required"),
     [string] $netmask = "128",
-    [string] $logfile = "$env:USERPROFILE\\.dynv6.log"
+    [string] $logfile = "$env:USERPROFILE\\.dynv6.log",
+    [string] $ipv4 = $null,
+    [string] $ipv6 = $null
 )
 
+# we store ip addresses in files, so we only update when there is a change
 $file4 = "$env:USERPROFILE\\.dynv6.addr4"
 $file6 = "$env:USERPROFILE\\.dynv6.addr6"
 
+# load existing ip addresses, when available
 if (Test-Path -Path $file4) {
     $old4 = Get-Content -Path $file4
 } else {
@@ -83,32 +87,47 @@ $update6 = [System.Uri]'https://dynv6.com/api/update'
 
 Get-Date | Tee-Object -FilePath $logfile -Append | Out-Host
 
-$current4 = Invoke-RestMethod -Method Get -Uri $lookup4
-$current6 = Invoke-RestMethod -Method Get -Uri $lookup6
+# lookup IPv4, will be skipped if variable already set
+if ($ipv4 -eq $null) {
+    $ipv4 = Invoke-RestMethod -Method Get -Uri $lookup4
+}
 
-if ($old4 -eq $current4) {
+# lookup IPv6, will be skipped if variable already set
+if ($ipv6 -eq $null) {
+    $ipv6 = Invoke-RestMethod -Method Get -Uri $lookup6
+}
+
+# update IPv4, if changed
+if ($old4 -eq $ipv4) {
     Tee-Object -FilePath $logfile -Append -InputObject "IPv4 address unchanged" | Out-Host
 } else {
+    # send IPv4 address to dynv6
     Tee-Object -FilePath $logfile -Append -InputObject "Updating IPv4" | Out-Host
     $body = @{
        zone = $zone
        token = $token
-       ipv4 = $current4
+       ipv4 = $ipv4
     }
     Invoke-RestMethod -Method Get -Uri $update4 -Body $body | Tee-Object -FilePath $logfile -Append | Out-Host
-    Out-File -FilePath $file4 -InputObject $current4
+
+    # save current IPv4 address
+    Out-File -FilePath $file4 -InputObject $ipv4
 }
 
-if ($old6 -eq $current6) {
+# update IPv6, if changed
+if ($old6 -eq $ipv6) {
     Tee-Object -FilePath $logfile -Append -InputObject "IPv6 address unchanged" | Out-Host
 } else {
+    # send IPv6 address to dynv6
     Tee-Object -FilePath $logfile -Append -InputObject "Updating IPv6" | Out-Host
     $body = @{
        zone = $zone
        token = $token
-       ipv6 = "$current6/$netmask"
+       ipv6 = "$ipv6/$netmask"
     }
     Invoke-RestMethod -Method Get -Uri $update6 -Body $body | Tee-Object -FilePath $logfile -Append | Out-Host
-    Out-File -FilePath $file6 -InputObject $current6
+
+    # save current IPv6 address
+    Out-File -FilePath $file6 -InputObject $ipv6
 }
 
