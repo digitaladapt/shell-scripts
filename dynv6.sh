@@ -1,6 +1,6 @@
 #!/bin/sh
 
-hostname=$1
+zone=$1
 device=$2
 scope=$3
 
@@ -11,7 +11,7 @@ file6="$HOME/.dynv6.addr6"
 [ -e $file6 ] && old6=`cat $file6`
 
 # ensure we have required information
-if [ -z "$hostname" -o -z "$token" ]; then
+if [ -z "$zone" -o -z "$token" ]; then
     echo "Usage: token=<your-authentication-token> [netmask=64] $0 your-name.dynv6.net [device] [scope]"
     exit 1
 fi
@@ -71,7 +71,7 @@ if [ "$old4" = "$ipv4" ]; then
     echo "IPv4 address unchanged"
 else
     echo -n "Updating IPv4: "
-    $bin "https://dynv6.com/api/update?hostname=$hostname&ipv4=$ipv4&token=$token"
+    $bin "https://dynv6.com/api/update?zone=$zone&ipv4=$ipv4&token=$token"
     echo ""
 
     # save current address
@@ -84,7 +84,7 @@ if [ "$old6" = "$ipv6" ]; then
 else
     # send addresses to dynv6
     echo -n "Updating IPv6: "
-    $bin "https://dynv6.com/api/update?hostname=$hostname&ipv6=$ipv6&token=$token"
+    $bin "https://dynv6.com/api/update?zone=$zone&ipv6=$ipv6&token=$token"
     echo ""
 
     # save current address

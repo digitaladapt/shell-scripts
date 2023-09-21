@@ -55,39 +55,60 @@
 
 
 param(
-    [string]$zone = $(throw "-zone is required"),
-    [string]$token = $(throw "-token is required"),
-    [string]$logfile = "$env:USERPROFILE\\DDNS_UPDATE_LOG",
-    [switch]$isIPV6 = $false
-    )
+    [string] $zone = $(throw "-zone is required"),
+    [string] $token = $(throw "-token is required"),
+    [string] $netmask = "128",
+    [string] $logfile = "$env:USERPROFILE\\.dynv6.log"
+)
 
-$lookup4 =[System.Uri]'https://ipinfo.io/ip'
-$lookup6 =[System.Uri]'https://v6.ipinfo.io/ip'
-# google can return either IPv4 or IPv6 'https://domains.google.com/checkip'
+$file4 = "$env:USERPROFILE\\.dynv6.addr4"
+$file6 = "$env:USERPROFILE\\.dynv6.addr6"
 
-$update4 =[System.Uri]'https://dynv6.com/api/update'
-$update6 =[System.Uri]'https://dynv6.com/api/update'
+if (Test-Path -Path $file4) {
+    $old4 = Get-Content -Path $file4
+} else {
+    $old4 = $null
+}
+if (Test-Path -Path $file6) {
+    $old6 = Get-Content -Path $file6
+} else {
+    $old6 = $null
+}
+
+$lookup4 = [System.Uri]'https://ipinfo.io/ip'
+$lookup6 = [System.Uri]'https://v6.ipinfo.io/ip'
+
+$update4 = [System.Uri]'https://dynv6.com/api/update'
+$update6 = [System.Uri]'https://dynv6.com/api/update'
 
 Get-Date | Tee-Object -FilePath $logfile -Append | Out-Host
 
-if($isIPV6 -eq $false){
-    $current4 = Invoke-RestMethod -Method Get -Uri $lookup4
+$current4 = Invoke-RestMethod -Method Get -Uri $lookup4
+$current6 = Invoke-RestMethod -Method Get -Uri $lookup6
 
+if ($old4 -eq $current4) {
+    Tee-Object -FilePath $logfile -Append -InputObject "IPv4 address unchanged" | Out-Host
+} else {
+    Tee-Object -FilePath $logfile -Append -InputObject "Updating IPv4" | Out-Host
     $body = @{
        zone = $zone
        token = $token
        ipv4 = $current4
     }
-    Invoke-RestMethod -Method Get -Uri $update4 -Body $body | Tee-Object -FilePath $lotfile -Append | Out-Host
+    Invoke-RestMethod -Method Get -Uri $update4 -Body $body | Tee-Object -FilePath $logfile -Append | Out-Host
+    Out-File -FilePath $file4 -InputObject $current4
 }
-else{
-    $current6 = Invoke-RestMethod -Method Get -Uri $lookup6
 
+if ($old6 -eq $current6) {
+    Tee-Object -FilePath $logfile -Append -InputObject "IPv6 address unchanged" | Out-Host
+} else {
+    Tee-Object -FilePath $logfile -Append -InputObject "Updating IPv6" | Out-Host
     $body = @{
        zone = $zone
        token = $token
-       ipv6 = "$current6/128"
+       ipv6 = "$current6/$netmask"
     }
     Invoke-RestMethod -Method Get -Uri $update6 -Body $body | Tee-Object -FilePath $logfile -Append | Out-Host
+    Out-File -FilePath $file6 -InputObject $current6
 }
 
