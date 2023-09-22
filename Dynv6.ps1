@@ -96,6 +96,7 @@ if ($ipv4 -eq "") {
 if ($ipv6 -eq "") {
     $ipv6 = Invoke-RestMethod -Method Get -Uri $lookup6
 }
+$ipv6 = "$ipv6/$netmask"
 
 # update IPv4, if changed
 if ($old4 -eq $ipv4) {
@@ -123,7 +124,7 @@ if ($old6 -eq $ipv6) {
     $body = @{
        zone = $zone
        token = $token
-       ipv6 = "$ipv6/$netmask"
+       ipv6 = $ipv6
     }
     Invoke-RestMethod -Method Get -Uri $update6 -Body $body | Tee-Object -FilePath $logfile -Append | Out-Host
 
