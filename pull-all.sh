@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# perform a "git fetch" on each location specified (recursively), or current location if none specified.
+# perform a "git pull" on each location specified (recursively), or current location if none specified.
 # git will quietly ignore any git repo stored in a folder you lack permission on.
-# fetch does not effect local files, just updating information about repo from remote.
+# pull will not go through if there are uncommitted local changes, or if the branch has no upstream.
 #
 # will only search symbolic links when passed "-l" option, must be before any locations
-# fetch-all.sh [-l] # current location implied
-# fetch-all.sh [-l] ~/my-projects /var/group-projects
+# pull-all.sh [-l] # current location implied
+# pull-all.sh [-l] ~/my-projects /var/group-projects
 
 # check for "-l" in command prompt
 followLinks="-H"
@@ -24,20 +24,20 @@ if [[ "-H" == "$followLinks" ]]; then
 fi
 
 # function to process each location
-function process_git_fetch () {
+function process_git_pull () {
     startedIn=`pwd`
     location=$(dirname "$@")
-    echo -n "----- git fetch $location "
+    echo -n "----- git pull $location "
     printf "%*.*s" 0 $((40 - ${#location} )) "----------------------------------------"
     echo "-----"
     cd "$location"
-    git fetch --tags --prune
+    git pull --ff-only
     cd "$startedIn"
 }
 
 # find all folders named ".git" under given locations,
-# and call process_git_fetch on each location that was found.
+# and call process_git_pull on each location that was found.
 # we then work on the folder that contained the ".git" folder.
 
-find "$followLinks" "$@" -type d -name ".git" | while read file; do process_git_fetch "$file"; done
+find "$followLinks" "$@" -type d -name ".git" | while read file; do process_git_pull "$file"; done
 
