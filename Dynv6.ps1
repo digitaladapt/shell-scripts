@@ -1,39 +1,25 @@
 ###################
 # UpdateDynv6.ps1 #
 ###################
-# Windows Powershell Script for updating
-# Dynamic DNS on Dynv6.com using the RESTful
-# interface. Use the windows task schedualer
-# to automatically run.
 #
-# !!!WARNING!!!!
-# This is a Proof Of Consept script!
-# The next version will be turned into a proper
-# cmdlet and packed into a Posershell Module.
+# Windows Powershell Script for updating Dynamic DNS on Dynv6.com using the
+# RESTful interface. Use the windows task schedualer to automatically run.
 #
 # Script Parameters:
-# -zone <System.String>
-#  DNS Zone (domain name) to update.
-#
-# -token <System.String>
-#  HTTP Token. https://dynv6.com/keys#token
-#
-# [-logfile] <System.String>
-#  Path to update log file. By default the file will be placed in:
-#  $env:USERPROFILE\\DDNS_UPDATE_LOG
-#
-# [-isIPV6] <System.Management.Automation.SwitchParameter>
-#  Attempt to update the zone using an IPV6 address.
+# -zone         <string>    DNS Zone (domain name) to update.
+# -token        <string>    HTTP Token, see: https://dynv6.com/keys#token
+# [-netmask]    <string>    Optional, IPv6 netmask, defaults to 128.
+# [-logfile]    <string>    Optional, filename to log to, defaults to "~/.dynv6.log".
+# [-ipv4]       <string>    Optional, IPv4 override, to skip resolving.
+# [-ipv6]       <string>    Optional, IPv6 override, to skip resolving.
 #
 ### Example
-# Run from CMD or Batch file to update with an IPV4:
-# Powershell -ExecutionPolicy Unrestricted -File ./UpdateDynv6.ps1 -zone 'ExampleDomain.com' -token 'XXXXXXXXXXXXXXXXXXXXXXXX'
-#
-### Run from CMD or Batch file to update with an IPV6:
-# Powershell -ExecutionPolicy Unrestricted -File ./UpdateDynv6.ps1 -zone 'ExampleDomain.com' -token 'XXXXXXXXXXXXXXXXXXXXXXXX' -isIPV6
+# Run from CMD or Batch file to IPv4 and IPv6 with automatic lookup:
+# powershell.exe -File ./Dynv6.ps1 -zone "ExampleDomain.com" -token "XXXXXX"
 #
 ###################
 # Copyright 2020 Joe Herbert ( djneonc@gmail.com )
+# Copyright 2023 Andrew Stowell ( andrew@digitaladapt.com )
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -88,12 +74,12 @@ $update6 = [System.Uri]'https://dynv6.com/api/update'
 Get-Date | Tee-Object -FilePath $logfile -Append | Out-Host
 
 # lookup IPv4, will be skipped if variable already set
-if ($ipv4 -eq "") {
+if ( ! $ipv4) {
     $ipv4 = Invoke-RestMethod -Method Get -Uri $lookup4
 }
 
 # lookup IPv6, will be skipped if variable already set
-if ($ipv6 -eq "") {
+if ( ! $ipv6) {
     $ipv6 = Invoke-RestMethod -Method Get -Uri $lookup6
 }
 $ipv6 = "$ipv6/$netmask"

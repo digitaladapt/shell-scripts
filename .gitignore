@@ -1,5 +1,6 @@
 /log/singleton.log
 /config.sh
+/Config.ps1
 /crons/*.status
 /distinct/*.msg
 /git-prompt.sh
