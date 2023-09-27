@@ -2,7 +2,7 @@
 # shellcheck disable=SC2016
 set -e
 
-VERSION="1.18.1"
+VERSION="1.20.6"
 
 [ -z "$GOROOT" ] && GOROOT="$HOME/.go"
 [ -z "$GOPATH" ] && GOPATH="$HOME/go"
@@ -24,6 +24,9 @@ case $OS in
             ;;
         "armv8")
             ARCH=arm64
+            ;;
+        "i686")
+            ARCH=386
             ;;
         .*386.*)
             ARCH=386
@@ -143,14 +146,14 @@ echo "Configuring shell profile in: $shell_profile"
 touch "$shell_profile"
 if [ "$shell" == "fish" ]; then
     {
-        echo '# GoLang'
+        echo -e '\n# GoLang'
         echo "set GOROOT '${GOROOT}'"
         echo "set GOPATH '$GOPATH'"
         echo 'set PATH $GOPATH/bin $GOROOT/bin $PATH'
     } >> "$shell_profile"
 else
     {
-        echo '# GoLang'
+        echo -e '\n# GoLang'
         echo "export GOROOT=${GOROOT}"
         echo 'export PATH=$GOROOT/bin:$PATH'
         echo "export GOPATH=$GOPATH"
