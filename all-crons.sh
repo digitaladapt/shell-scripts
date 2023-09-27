@@ -1,24 +1,24 @@
 #!/bin/bash
 
-# this only works if your crontab uses three spaces for each section,
-# like the following spacing example:
-#m  h   dom mon dow command
+# quickly generate a script file which will contain all crontab tasks.
+# optionally takes filename to use, defaults to 'crontasks.sh'.
+crontasks="$1"
 
-# quickly generate a script file which will run each crontab task
-# optionally takes filename to use, otherwise defaults 'crontasks.sh'
-FILENAME="$1"
-
-if [ -z "$FILENAME" ]; then
-    FILENAME='crontasks.sh'
+if [[ -z "$crontasks" ]]; then
+    crontasks='crontasks.sh'
 fi
 
-echo "#!/bin/bash" > "$FILENAME"
-echo "" >> "$FILENAME"
+# prefix file we are generating
+echo "#!/bin/bash" > "$crontasks"
+echo "" >> "$crontasks"
 
-# list crontab, remove comments and empty lines,
-# expect cron time formatting to be the first 20 characters,
-# so drop the 21st character onward to standard out.
-crontab -l | grep -Ev '^(#|$)' | cut -c 21- >> "$FILENAME"
+# list crontab, remove comments, convert tabs to space, squeeze the spaces,
+# then take the sixth field "command" and add it to the file.
+# could have issues if a task has a "#" in the middle.
+crontab -l | grep -o '^[^#]*' | tr "\t" ' ' | tr -s ' ' | cut -s -d ' ' -f 6- >> "$crontasks"
 
-chmod +x "$FILENAME"
+echo "" >> "$crontasks"
+
+# make the file executable, so we are good to go
+chmod +x "$crontasks"
 
