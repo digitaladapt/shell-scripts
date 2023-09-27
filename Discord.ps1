@@ -14,7 +14,7 @@
 #
 ### Example
 # Run from CMD or Batch file to transmit the message to Discord:
-# CMD> powershell.exe -File .\Discord.ps1 -message "Here is some content to send to Discord."
+# CMD> pwsh -File .\Discord.ps1 -message "Here is some content to send to Discord."
 # or pipeline in powershell:
 # PS1> echo "Here is some content to send to Discord" | .\Discord.ps1
 #
@@ -27,9 +27,9 @@
 
 param (
     [parameter (ValueFromPipeline = $true)] [string[]] $message,
-    [string] $distinct,
-    [string] $webhook,
-    [string] $botName
+    [string] $distinct = "",
+    [string] $webhook = "",
+    [string] $botName = ""
 )
 begin {
     $chunk = ""
@@ -66,6 +66,7 @@ end {
     # complete last chunk, by queuing it up
     $chunks += $chunk
 
+    # if distinct, load previous message to check for duplicate message
     if ($distinct) {
         $distinctFile = "$PSScriptRoot\\distinct\\$distinct.msg"
         if (Test-Path -Path $distinctFile) {

@@ -4,18 +4,19 @@
 #
 # Windows Powershell Script for updating Dynamic DNS on Dynv6.com using the
 # RESTful interface. Use the windows task schedualer to automatically run.
+# Will use config.ps1 for defaults, if available.
 #
 # Script Parameters:
-# -zone         <string>        DNS Zone (domain name) to update.
-# -token        <string>        HTTP Token, see: https://dynv6.com/keys#token
+# [-zone]       <string>        Optional, DNS Zone (domain name) to update, default to config.
+# [-token]      <string>        Optional, HTTP Token, see: https://dynv6.com/keys#token defaults to config.
 # [-netmask]    <string>        Optional, IPv6 netmask, defaults to 128.
-# [-logFile]    <string|null>   Optional, filename to log to, defaults to "~/.dynv6.log", use null to disable logging.
+# [-logFile]    <string|null>   Optional, filename to log to, defaults to "~\.dynv6.log", use $null to disable logging.
 # [-ipv4]       <string>        Optional, IPv4 override, to skip resolving.
 # [-ipv6]       <string>        Optional, IPv6 override, to skip resolving.
 #
 ### Example
 # Run from CMD or Batch file to IPv4 and IPv6 with automatic lookup:
-# powershell.exe -File ./Dynv6.ps1 -zone "ExampleDomain.com" -token "XXXXXX"
+# CMD> pwsh -File .\Dynv6.ps1 -zone "ExampleDomain.com" -token "XXXXXX"
 #
 ###################
 # Copyright 2020 Joe Herbert ( djneonc@gmail.com )
@@ -41,13 +42,26 @@
 
 # we need zone and token, we also accept, netmask, and overrides
 param(
-    [string] $zone = $(throw "-zone is required"),
-    [string] $token = $(throw "-token is required"),
+    [string] $zone = "",
+    [string] $token = "",
     [string] $netmask = "128",
     [object] $logFile = "$env:USERPROFILE\\.dynv6.log",
     [string] $ipv4 = "",
     [string] $ipv6 = ""
 )
+
+# load in defaults from config
+$configFile = "$PSScriptRoot\\Config.ps1"
+if (Test-Path -Path $configFile) {
+    . $configFile
+
+    if ( ! $zone) {
+        $zone = $DYNV6_ZONE
+    }
+    if ( ! $token) {
+        $token = $DYNV6_TOKEN
+    }
+}
 
 # we store ip addresses in files, so we only update when there is a change
 $file4 = "$env:USERPROFILE\\.dynv6.addr4"
@@ -56,13 +70,9 @@ $file6 = "$env:USERPROFILE\\.dynv6.addr6"
 # load existing ip addresses, when available
 if (Test-Path -Path $file4) {
     $old4 = Get-Content -Path $file4
-} else {
-    $old4 = $null
 }
 if (Test-Path -Path $file6) {
     $old6 = Get-Content -Path $file6
-} else {
-    $old6 = $null
 }
 
 $lookup4 = [System.Uri]'https://ipinfo.io/ip'
