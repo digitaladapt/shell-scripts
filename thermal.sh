@@ -1,21 +1,43 @@
 #!/bin/bash
 
-LOCATION=`dirname "$0"`
+alertLevel="$1"
 
-source "${LOCATION}/config.sh"
+# load in defaults from config
+scriptRoot=$(dirname "$0")
+configFile="$scriptRoot/config.sh"
+if [[ -f "$configFile" ]]; then
+    source "$configFile"
 
-# this is currently specific to raspberry-pi
-# since that is the only kind of physical server I have
-# TODO make this work with all temp in class/thermal
-name=$(</sys/class/thermal/thermal_zone${THERMAL_ZONE}/type)
-mc=$(</sys/class/thermal/thermal_zone${THERMAL_ZONE}/temp)
+    if [[ -z "$alertLevel" ]]; then
+        alertLevel="$THERMAL_ALERT"
+    fi
+fi
 
-c=`echo "scale=1 ; $mc / 1000.0" | bc -l`
-f=`echo "scale=1 ; $c * 9 / 5 + 32" | bc -l`
+# loop over all thermal zones
+while read -r mcFile; do
+    # each zone has two files we use:
+    # "./temp" <int> zone temp (milli-celsius)
+    # "./type" <string> zone title
+    titleFile=$(echo "$mcFile" | sed 's/temp/type/')
+    title=$( < "$titleFile")
+    mc=$( < "$mcFile")
 
-echo "${name}: ${c} C ($f F)"
+    # calculate Celcius and Fahrenheit
+    c=$(echo "scale=1 ; $mc / 1000.0" | bc -l)
+    f=$(echo "scale=1 ; $c * 9 / 5 + 32" | bc -l)
+    hot=$(echo "$c >= $alertLevel" | bc -l)
 
-if (( "$#" > "0" )); then
-    exit `echo "$c >= $1" | bc`
+    echo "$title: $c C ($f F)"
+
+    # if we have reached our alert threshold, mark it as active
+    if [[ -n "$alertLevel" ]] && [[ "$hot" -gt 0 ]]; then
+        alertActive=1
+    fi
+
+done <<< $(find /sys/class/thermal/thermal*/ -name 'temp')
+
+# we exit with a status code of 1 to indicate alert level has been reached
+if [[ "$alertActive" -eq 1 ]]; then
+    exit 1
 fi
 

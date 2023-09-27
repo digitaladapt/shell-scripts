@@ -1,10 +1,7 @@
 #!/bin/bash
 
-# degrees in C
-THERMAL_ALERT=75
-
-# see: /sys/class/thermal/thermal_zone*
-THERMAL_ZONE=0
+# degrees in Celsius which we regard as too high
+THERMAL_ALERT=70
 
 STORAGE_MONITOR=("/")
 
@@ -31,8 +28,6 @@ DISCORD_SERVER_NAME="<YOUR_SERVER>"
 DISCORD_GENERAL_HOOK="<WEBHOOK_URL_HERE>?wait=true"
 
 DISCORD_RESTAKE_HOOK="<WEBHOOK_URL_HERE>?wait=true"
-
-DISCORD_THERMAL_HOOK="<WEBHOOK_URL_HERE>?wait=true"
 
 DISCORD_STORAGE_HOOK="<WEBHOOK_URL_HERE>?wait=true"
 

@@ -1,21 +1,32 @@
 #!/bin/bash
 
-LOCATION=`dirname "$0"`
+# degrees in Celsius which we regard as too high, defaults to config
+alertLevel="$1"
 
-source "${LOCATION}/../config.sh"
+# load in defaults from config
+scriptRoot="$(dirname "$0")/.."
+configFile="$scriptRoot/config.sh"
+if [[ -f "$configFile" ]]; then
+    source "$configFile"
 
-thermal=`${LOCATION}/../thermal.sh ${THERMAL_ALERT}`
-alert=$?
+    if [[ -z "$alertLevel" ]]; then
+        alertLevel="$THERMAL_ALERT"
+    fi
+fi
 
-if [[ "0" != "${alert}" ]]; then
-    echo "${thermal}, above threshold ${THERMAL_ALERT} C"
-    ${LOCATION}/../discord.sh thermal "${thermal}, above threshold ${THERMAL_ALERT} C"
-    touch "${LOCATION}/thermal.status"
-elif [[ -f "${LOCATION}/thermal.status" ]]; then
-    rm "${LOCATION}/thermal.status"
-    echo "${thermal}, previously above threshold ${THERMAL_ALERT} C"
-    ${LOCATION}/../discord.sh thermal "${thermal}, previously above threshold ${THERMAL_ALERT} C"
-else
-    echo "${thermal}, below threshold ${THERMAL_ALERT} C"
+# get current status
+thermal=$("$scriptRoot/thermal.sh" "$alertLevel")
+alert="$?"
+
+if [[ "0" -ne "$alert" ]]; then
+    # if currently in an alert status
+    alertLevelF=`echo "scale=1 ; $alertLevel * 9 / 5 + 32" | bc -l`
+    "$scriptRoot/discord.sh" "$thermal, above threshold $alertLevel C ($alertLevelF F)"
+    touch "$HOME/.thermal.alert"
+elif [[ -f "$HOME/.thermal.alert" ]]; then
+    # if previously in an alert status
+    alertLevelF=`echo "scale=1 ; $alertLevel * 9 / 5 + 32" | bc -l`
+    "$scriptRoot/discord.sh" "$thermal, previously above threshold $alertLevel C ($alertLevelF F)"
+    rm "$HOME/.thermal.alert"
 fi
 

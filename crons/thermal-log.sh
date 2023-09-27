@@ -1,9 +1,8 @@
 #!/bin/bash
 
-LOCATION=`dirname "$0"`
+scriptRoot="$(dirname "$0")/.."
 
-thermal=`${LOCATION}/../thermal.sh`
+thermal=$("$scriptRoot/thermal.sh")
 
-echo "${thermal}"
-${LOCATION}/../discord.sh thermal "${thermal}"
+"$scriptRoot/discord.sh" "$thermal"
 

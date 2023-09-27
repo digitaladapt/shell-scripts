@@ -4,9 +4,14 @@ LOCATION=`dirname "$0"`
 
 source "${LOCATION}/config.sh"
 
-HOOK_ARG="$1"
-# sed removes spaces before each line
-MESSAGE=`echo "${@:2}" | sed 's/^ *//'`
+if [[ $# -gt 1 ]]; then
+    HOOK_ARG="$1"
+    # sed removes spaces before each line
+    MESSAGE=`echo "${@:2}" | sed 's/^ *//'`
+else
+    # sed removes spaces before each line
+    MESSAGE=`echo "${@}" | sed 's/^ *//'`
+fi
 
 # if message is too long, split it, and after curl, recursively call with remainder
 # 2k max, but we must account for escaping text in json, so limit to 90% capacity
@@ -44,10 +49,6 @@ case $HOOK_ARG in
         HOOK="restake"
         HOOK_URL=$DISCORD_RESTAKE_HOOK
         ;;
-    thermal)
-        HOOK="thermal"
-        HOOK_URL=$DISCORD_THERMAL_HOOK
-        ;;
     storage)
         HOOK="storage"
         HOOK_URL=$DISCORD_STORAGE_HOOK
@@ -60,7 +61,7 @@ if [[ "$MESSAGE" == *"\\u001b"* ]]; then
     # just here to resolve formatting issue in vim "`"
 fi
 
-curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": ${MESSAGE}}" $HOOK_URL | jq -r '.id'
+curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": ${MESSAGE}}" $HOOK_URL | jq -r '.id,.message'
 
 if [ -n "${EXTRA}" ]; then
     "${LOCATION}/discord.sh" "${HOOK}" "${EXTRA}"

@@ -39,5 +39,5 @@ function process_git_pull () {
 # and call process_git_pull on each location that was found.
 # we then work on the folder that contained the ".git" folder.
 
-find "$followLinks" "$@" -type d -name ".git" | while read file; do process_git_pull "$file"; done
+find "$followLinks" "$@" -type d -name ".git" | while read -r file; do process_git_pull "$file"; done
 

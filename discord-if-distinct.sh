@@ -4,10 +4,16 @@ LOCATION=`dirname "$0"`
 
 source "${LOCATION}/config.sh"
 
-HOOK_ARG="$1"
-BOBBY="$2"
-# sed removes spaces before each line
-MESSAGE=`echo "${@:3}" | sed 's/^ *//'`
+if [[ $# -gt 2 ]]; then
+    HOOK_ARG="$1"
+    BOBBY="$2"
+    # sed removes spaces before each line
+    MESSAGE=`echo "${@:3}" | sed 's/^ *//'`
+else
+    BOBBY="$1"
+    # sed removes spaces before each line
+    MESSAGE=`echo "${@:2}" | sed 's/^ *//'`
+fi
 
 # sed removes blank lines from the end of the message
 FULL_MESSAGE=`echo "${MESSAGE}" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'`
@@ -47,10 +53,6 @@ case $HOOK_ARG in
         HOOK="restake"
         HOOK_URL=$DISCORD_RESTAKE_HOOK
         ;;
-    thermal)
-        HOOK="thermal"
-        HOOK_URL=$DISCORD_THERMAL_HOOK
-        ;;
     storage)
         HOOK="storage"
         HOOK_URL=$DISCORD_STORAGE_HOOK
@@ -71,7 +73,7 @@ fi
 if [ "${FULL_MESSAGE}" != "${OLD_MSG}" ]; then
     echo "${FULL_MESSAGE}" > "${LOCATION}/distinct/${BOBBY}.msg"
 
-    curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": ${MESSAGE}}" $HOOK_URL | jq -r '.id'
+    curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": ${MESSAGE}}" $HOOK_URL | jq -r '.id,.message'
 
     if [ -n "${EXTRA}" ]; then
         "${LOCATION}/discord.sh" "${HOOK}" "${EXTRA}"
