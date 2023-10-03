@@ -64,8 +64,8 @@ if (Test-Path -Path $configFile) {
 }
 
 # we store ip addresses in files, so we only update when there is a change
-$file4 = "$env:USERPROFILE\\.dynv6.addr4"
-$file6 = "$env:USERPROFILE\\.dynv6.addr6"
+$file4 = "$env:USERPROFILE\\.dynv6.addr4.$zone"
+$file6 = "$env:USERPROFILE\\.dynv6.addr6.$zone"
 
 # load existing ip addresses, when available
 if (Test-Path -Path $file4) {
