@@ -12,8 +12,8 @@ if [ -z "$zone" -o -z "$token" ]; then
 fi
 
 # we store ip addresses in files, so we only update when there is a change
-file4="$HOME/.dynv6.addr4"
-file6="$HOME/.dynv6.addr6"
+file4="$HOME/.dynv6.addr4.$zone"
+file6="$HOME/.dynv6.addr6.$zone"
 
 # load existing ip addresses, when available
 [ -e $file4 ] && old4=`cat $file4`
