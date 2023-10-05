@@ -8,11 +8,21 @@ if [[ $# -gt 2 ]]; then
     HOOK_ARG="$1"
     BOBBY="$2"
     # sed removes spaces before each line
-    MESSAGE=`echo "${@:3}" | sed 's/^ *//'`
+    MESSAGE=`echo "${@:3}" | sed 's/^ *//' | sed 's/ *$//'`
 else
     BOBBY="$1"
     # sed removes spaces before each line
-    MESSAGE=`echo "${@:2}" | sed 's/^ *//'`
+    MESSAGE=`echo "${@:2}" | sed 's/^ *//' | sed 's/ *$//'`
+
+    if [[ "$MESSAGE" == "general" ]] || [[ "$MESSAGE" == "block" ]] || [[ "$MESSAGE" == "restake" ]] || [[ "$MESSAGE" == "storage" ]]; then
+        HOOK_ARG="$MESSAGE"
+        MESSAGE=''
+    fi
+fi
+
+if [[ -z "$MESSAGE" ]]; then
+    echo 'no message provided'
+    exit 0
 fi
 
 # sed removes blank lines from the end of the message

@@ -7,10 +7,20 @@ source "${LOCATION}/config.sh"
 if [[ $# -gt 1 ]]; then
     HOOK_ARG="$1"
     # sed removes spaces before each line
-    MESSAGE=`echo "${@:2}" | sed 's/^ *//'`
+    MESSAGE=`echo "${@:2}" | sed 's/^ *//' | sed 's/ *$//'`
 else
     # sed removes spaces before each line
-    MESSAGE=`echo "${@}" | sed 's/^ *//'`
+    MESSAGE=`echo "${@}" | sed 's/^ *//' | sed 's/ *$//'`
+
+    if [[ "$MESSAGE" == "general" ]] || [[ "$MESSAGE" == "block" ]] || [[ "$MESSAGE" == "restake" ]] || [[ "$MESSAGE" == "storage" ]]; then
+        HOOK_ARG="$MESSAGE"
+        MESSAGE=''
+    fi
+fi
+
+if [[ -z "$MESSAGE" ]]; then
+    echo 'no message provided'
+    exit 0
 fi
 
 # if message is too long, split it, and after curl, recursively call with remainder
