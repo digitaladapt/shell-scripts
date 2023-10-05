@@ -53,23 +53,36 @@ function install_collection () {
 # ----------------------------------------------------------
 
 echo "----- Install core utilities: curl, vim, git, python3.. ---"
-install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen
+install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
 
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
 install_collection 'extra utilities' ncdu zip unzip iftop colorized-logs php-cli ca-certificates curl gnupg lsb-release
 
-echo "----- Install nginx + certbot -----------------------"
-read -p 'Install nginx, and python3-pip, then install via pip certbot, certbot-nginx, and certbot-dns-google-domain? [y/N]: ' nginx_install
-case $nginx_install in
+echo "----- Install nginx ---------------------------------"
+install_collection 'nginx web-server' nginx
+
+echo "----- Install certbot via pip, in /opt/certbot/ -----"
+read -p 'Install certbot, certbot-nginx, and certbot-dns-google-domain to /opt/certbot/ via pip in virtual environment? [y/N]: ' certbot_install
+case $certbot_install in
     [Yy]* )
         if [ $called_update = false ]; then
             echo "Updating APT before Installing"
             sudo apt update
             called_update=true
         fi
-        echo "Installing nginx python3-pip"
-        sudo apt install nginx python3-pip -y
-        sudo pip install certbot certbot-nginx certbot-dns-google-domains
+        echo "Installing python3-pip"
+        sudo apt install python3-pip python3-venv libaugeas0 -y
+
+        # see: https://certbot.eff.org/instructions?ws=nginx&os=pip
+        sudo python3 -m venv /opt/certbot/
+        sudo /opt/certbot/bin/pip install --upgrade pip
+        sudo /opt/certbot/bin/pip install certbot certbot-nginx certbot-dns-google-domains
+        sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
+        (
+        cat << 'CRON'
+0 0,12 * * * root /opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q
+CRON
+) | sudo tee -a /etc/crontab > /dev/null
         ;;
     * )
         echo 'Skipping'
