@@ -26,10 +26,10 @@ fi
 # function to process each location
 function process_git_list () {
     startedIn=`pwd`
-    location=$(dirname "$@")
-    echo -n "----- git remote $location "
-    printf "%*.*s" 0 $((40 - ${#location} )) "----------------------------------------"
-    echo "-----"
+    location=$(realpath $(dirname "$@"))
+    line="--- --- --- --- --- --- --- --- --- ---"
+    # use "--" to tell printf there are no more commands, only strings to print
+    printf -- "--- git remote %s %s ---\n" "$location" "${line:${#location}}"
     cd "$location"
     git remote -vv
     cd "$startedIn"

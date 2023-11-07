@@ -85,6 +85,27 @@ esac
 
 # ----------------------------------------------------------
 
+echo "----- Set 'cd' to use physical directory structure -----"
+read -p 'Add ``alias cd="cd -P"`` in ~/.bashrc? [y/N]: ' add_cd_alias
+case $add_cd_alias in
+    [Yy]* )
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'TERM'
+
+# ABS when changing directory through a symlink, resolve real location
+alias cd='cd -P'
+
+TERM
+) >> "$HOME/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- Add symlink for ssh-ident as ssh --------------"
 read -p 'Add "ssh alias for ssh-ident"? (REQUIRES python) [y/N]: ' add_ident
 case $add_ident in
