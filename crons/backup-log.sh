@@ -1,16 +1,33 @@
 #!/bin/bash
 
-LOCATION=`dirname "$0"`
+backupDir="$1"
+backupType="$2"
 
-source "${LOCATION}/../config.sh"
+# load in defaults from config
+scriptRoot="$(dirname "$0")/.."
+configFile="$scriptRoot/config.sh"
+if [[ -f "$configFile" ]]; then
+    source "$configFile"
 
-cd "${BACKUP_DIRECTORY}"
+    if [[ -z "$backupDir" ]]; then
+        backupDir="$BACKUP_DIRECTORY"
+    fi
+    if [[ -z "$backupType" ]]; then
+        backupType="$PRUNE_TYPE"
+    fi
+fi
 
-backups=`find * -type f | sort | xargs du -h`
-echo "${backups}"
-${LOCATION}/../discord.sh block "${backups}"
+if [[ "$backupType" = "<DIR>" ]]; then
+    backups=$(find "$backupDir" -maxdepth 1 -type d | grep -v "^$backupDir$" | sort | xargs du -h --summarize)
+    hashes=""
+else
+    backups=$(find "$backupDir" -type f -name "$backupType" | sort | xargs du -h)
+    hashes=$(find "$backupDir" -type f -name "$backupType" | sort | xargs md5sum --tag)
+fi
 
-hashes=`find * -type f | sort | xargs md5sum --tag`
-echo "${hashes}"
-${LOCATION}/../discord.sh block "${hashes}"
+echo "$backups"
+if [[ -n "$hashes" ]]; then
+    echo "$hashes"
+fi
+"$scriptRoot/discord.sh" -c "mint" -t "Backup Status" "$backups" "$hashes"
 

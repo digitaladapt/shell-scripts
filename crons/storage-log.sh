@@ -1,11 +1,17 @@
 #!/bin/bash
 
-LOCATION=`dirname "$0"`
+locations="$@"
 
-source "${LOCATION}/../config.sh"
+# load in defaults from config
+scriptRoot="$(dirname "$0")/.."
+configFile="$scriptRoot/config.sh"
+if [[ -f "$configFile" ]]; then
+    source "$configFile"
 
-storage=`${LOCATION}/../df-custom.sh ${STORAGE_MONITOR[@]}`
+    if [[ -z "$locations" ]]; then
+        locations=${STORAGE_MONITOR[@]}
+    fi
+fi
 
-echo "${storage}"
-${LOCATION}/../discord.sh block "${storage}"
+"$scriptRoot/df-custom.sh" $locations | "$scriptRoot/discord.sh" -c "blue" -t "Storage Status"
 

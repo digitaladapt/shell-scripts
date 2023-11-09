@@ -21,12 +21,12 @@ alert="$?"
 if [[ "0" -ne "$alert" ]]; then
     # if currently in an alert status
     alertLevelF=`echo "scale=1 ; $alertLevel * 9 / 5 + 32" | bc -l`
-    "$scriptRoot/discord.sh" "$thermal, above threshold $alertLevel C ($alertLevelF F)"
+    "$scriptRoot/discord.sh" -c "red" -t "Thermal Alert" "$thermal" $'\n' "above threshold $alertLevel C ($alertLevelF F)"
     touch "$HOME/.thermal.alert"
 elif [[ -f "$HOME/.thermal.alert" ]]; then
     # if previously in an alert status
     alertLevelF=`echo "scale=1 ; $alertLevel * 9 / 5 + 32" | bc -l`
-    "$scriptRoot/discord.sh" "$thermal, previously above threshold $alertLevel C ($alertLevelF F)"
+    "$scriptRoot/discord.sh" -c "orange" -t "Thermal Alert" "$thermal" $'\n' "previously above threshold $alertLevel C ($alertLevelF F)"
     rm "$HOME/.thermal.alert"
 fi
 

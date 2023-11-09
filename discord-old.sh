@@ -4,15 +4,13 @@ LOCATION=`dirname "$0"`
 
 source "${LOCATION}/config.sh"
 
-if [[ $# -gt 2 ]]; then
+if [[ $# -gt 1 ]]; then
     HOOK_ARG="$1"
-    BOBBY="$2"
-    # sed removes spaces before each line
-    MESSAGE=`echo "${@:3}" | sed 's/^ *//' | sed 's/ *$//'`
-else
-    BOBBY="$1"
     # sed removes spaces before each line
     MESSAGE=`echo "${@:2}" | sed 's/^ *//' | sed 's/ *$//'`
+else
+    # sed removes spaces before each line
+    MESSAGE=`echo "${@}" | sed 's/^ *//' | sed 's/ *$//'`
 
     if [[ "$MESSAGE" == "general" ]] || [[ "$MESSAGE" == "block" ]] || [[ "$MESSAGE" == "restake" ]] || [[ "$MESSAGE" == "storage" ]]; then
         HOOK_ARG="$MESSAGE"
@@ -24,9 +22,6 @@ if [[ -z "$MESSAGE" ]]; then
     echo 'no message provided'
     exit 0
 fi
-
-# sed removes blank lines from the end of the message
-FULL_MESSAGE=`echo "${MESSAGE}" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'`
 
 # if message is too long, split it, and after curl, recursively call with remainder
 # 2k max, but we must account for escaping text in json, so limit to 90% capacity
@@ -44,6 +39,7 @@ if [ -n "${EXTRA}" ]; then
         EXTRA="${chunks}${EXTRA}"
     fi
 fi
+
 
 # sed: rewrite json string, because "\u001b[m" needs to "\u001b[0m" instead
 # linux is fine with the missing zero, but discord needs it
@@ -75,18 +71,9 @@ if [[ "$MESSAGE" == *"\\u001b"* ]]; then
     # just here to resolve formatting issue in vim "`"
 fi
 
-OLD_MSG=""
-if [ -f "${LOCATION}/distinct/${BOBBY}.msg" ]; then
-    OLD_MSG=`cat "${LOCATION}/distinct/${BOBBY}.msg"`
-fi
+curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": ${MESSAGE}}" $HOOK_URL | jq -r '.id,.message'
 
-if [ "${FULL_MESSAGE}" != "${OLD_MSG}" ]; then
-    echo "${FULL_MESSAGE}" > "${LOCATION}/distinct/${BOBBY}.msg"
-
-    curl -s -H "Content-Type: application/json" -X POST -d "{\"username\": \"${DISCORD_SERVER_NAME}\", \"content\": ${MESSAGE}}" $HOOK_URL | jq -r '.id,.message'
-
-    if [ -n "${EXTRA}" ]; then
-        "${LOCATION}/discord-old.sh" "${HOOK}" "${EXTRA}"
-    fi
+if [ -n "${EXTRA}" ]; then
+    "${LOCATION}/discord-old.sh" "${HOOK}" "${EXTRA}"
 fi
 

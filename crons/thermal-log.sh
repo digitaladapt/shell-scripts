@@ -2,7 +2,5 @@
 
 scriptRoot="$(dirname "$0")/.."
 
-thermal=$("$scriptRoot/thermal.sh")
-
-"$scriptRoot/discord.sh" "$thermal"
+"$scriptRoot/thermal.sh" | "$scriptRoot/discord.sh" -c "yellow" -t "Thermal Status"
 
