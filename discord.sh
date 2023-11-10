@@ -9,6 +9,7 @@
 #                          cyan(#00ffff),    blue(#0343df),   purple(#7e1e9c), magenta(#c20078),  grey(#929591),
 # LIGHT:  pink(#ff81c0),   apricot(#ffb16d), beige(#e6daa6),  mint(#9ffeb0),   lavender(#c79fef), white(#ffffff).
 
+skipMsg=false
 declare -A colors
 colors=(
     ["maroon"]=6619169 ["brown"]=6633216    ["olive"]=7238926   ["teal"]=168838    ["navy"]=70974        ["black"]=0
@@ -18,11 +19,11 @@ colors=(
 )
 
 print_usage() {
-    echo "Usage: $0 [-h hook-url], [-c color], [-d [distinct-name] | -t title] message..."
+    echo "Usage: $0 [-h hook-url], [-c color], [-d [distinct-name] | -t title] (message... | -z | < file.msg)"
 }
 
 # handle all arguments provided
-while getopts 'h:c:d:t:' flag; do
+while getopts 'h:c:d:t:z' flag; do
     case "$flag" in
         h)
             if [[ "$OPTARG" == "http"*"?wait=true" ]]; then
@@ -51,6 +52,7 @@ while getopts 'h:c:d:t:' flag; do
             # '-d' without value is allowed, but generates a warning
             # in which case we'll use name of parent command with arguments
             # whatever the distinct key, we clean it up, since it will be used as a filename
+            # replace "/" and "|" with "_"
             if [[ -z "$OPTARG" ]]; then
                 distinct=$(ps -o args= $PPID | sed 's/[\/\|]/_/g')
                 echo "Warning: doing distinct by parent, with key '$distinct'" >&2
@@ -61,6 +63,9 @@ while getopts 'h:c:d:t:' flag; do
         t)
             # title, for supplying a title, without activing the "distinct" feature
             title="$OPTARG"
+            ;;
+        z)
+            skipMsg=true
             ;;
         *)
             echo "unknown option provided '$flag'"
@@ -93,7 +98,7 @@ fi
 message=$(echo "$@" | sed 's/^ *//' | sed 's/ *$//')
 
 # if we have no message, read from stdin instead
-if [[ -z "$message" ]]; then
+if [[ -z "$message" ]] && [[ "$skipMsg" = false ]]; then
     message=$(cat - | sed 's/^ *//' | sed 's/ *$//')
 fi
 
@@ -143,7 +148,12 @@ content="{"
 if [[ -n "$botName" ]]; then
     content="$content\"username\": $(echo "$botName" | jq -aRs .), "
 fi
-content="$content\"embeds\":[{\"description\": $message"
+content="$content\"embeds\":[{\"description\": "
+if [[ "$skipMsg" = false ]]; then
+    content="$content$message"
+else
+    content="$content\"\""
+fi
 if [[ -n "$color" ]]; then
     content="$content, \"color\": ${colors[$color]}"
 fi
