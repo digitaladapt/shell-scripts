@@ -126,7 +126,13 @@ fi
 # linux is fine with the missing zero, but discord needs it
 message=$(echo "$message" | jq -aRs . | sed 's/\\u001b\[m/\\u001b[0m/g')
 
-message="\"\`\`\`ansi\n${message:1:-1}\n\`\`\`\""
+if [[ "$message" = '"\n"' ]]; then
+    # message empty, so denote as such
+    message='"\ud83d\udea9 MESSAGE EMPTY \ud83d\udea9"'
+else
+    # wrap message into "ansi" block, for text color support
+    message="\"\`\`\`ansi\n${message:1:-1}\n\`\`\`\""
+fi
 
 # handle distinct stuff
 oldMsg=""
