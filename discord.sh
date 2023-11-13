@@ -19,7 +19,7 @@ colors=(
 )
 
 print_usage() {
-    echo "Usage: $0 [-h hook-url], [-c color], [-d [distinct-name] | -t title] (message... | -z | < file.msg)"
+    echo "Usage: $0 [-h hook-url], [-c color], [-d [distinct-name]] [-t title] (message... | -z | < file.msg)"
 }
 
 # handle all arguments provided
@@ -164,7 +164,7 @@ if [[ -n "$color" ]]; then
     content="$content, \"color\": ${colors[$color]}"
 fi
 if [[ -n "$distinct" ]] || [[ -n "$title" ]]; then
-    content="$content, \"title\": $(echo "${distinct-$title}" | jq -aRs .)"
+    content="$content, \"title\": $(echo "${title-$distinct}" | jq -aRs .)"
 fi
 content="$content}]}"
 
@@ -177,7 +177,7 @@ if [ -n "$extra" ]; then
     args=("-h" "$hookUrl")
     # when we call again, we convert distinct into a title
     if [[ -n "$distinct" ]] || [[ -n "$title" ]]; then
-        args+=("-t" "${distinct-$title}")
+        args+=("-t" "${title-$distinct}")
     fi
     if [[ -n "$color" ]]; then
         args+=("-c" "$color")

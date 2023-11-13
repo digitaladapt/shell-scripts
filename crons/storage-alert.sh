@@ -27,9 +27,11 @@ for index in "${!STORAGE_ALERT[@]}"; do
     fi
 done
 
+title="Storage Update"
 if [[ "$warn" = true ]]; then
     purple="purple"
+    title="Storage Alert"
 fi
 
 printf "%s\n" "${messages[@]}"
-printf "%s\n" "${messages[@]}" | "$scriptRoot/discord.sh" -c "${purple-blue}" -d "Storage Alert"
+printf "%s\n" "${messages[@]}" | "$scriptRoot/discord.sh" -c "${purple-blue}" -d "Storage Alert" -t "$title"
