@@ -29,7 +29,9 @@ param (
     [parameter (ValueFromPipeline = $true)] [string[]] $message,
     [string] $distinct = "",
     [string] $webhook = "",
-    [string] $botName = ""
+    [string] $botName = "",
+    [string] $color   = "",
+    [string] $title   = ""
 )
 begin {
     $chunk = ""
@@ -68,16 +70,31 @@ end {
 
     # if distinct, load previous message to check for duplicate message
     if ($distinct) {
-        $distinctFile = "$PSScriptRoot\\distinct\\$distinct.msg"
+        if ( ! $title) {
+            $title = $distinct;
+        }
+        $clean = $distinct -replace '[\.\|\"\*\/\:\<\>\?\\]', '';
+        $distinctFile = "$PSScriptRoot\\distinct\\$clean.msg"
         if (Test-Path -Path $distinctFile) {
             [string[]] $oldMessage = Get-Content -Path $distinctFile
         }
     }
 
+    $colors = @{
+        "maroon" = 6619169;  "brown"   = 6633216;  "olive"  = 7238926;  "teal"   = 168838;   "navy"     = 70974;    "black" = 0;
+        "red"    = 15007744; "orange"  = 16347910; "yellow" = 16776980; "lime"   = 11206450; "green"    = 1421338;
+                             "cyan"    = 65535;    "blue"   = 213983;   "purple" = 8265372;  "magenta"  = 12714104; "grey"  = 9606545;
+        "pink"   = 16744896; "apricot" = 16757101; "beige"  = 15129254; "mint"   = 10485424; "lavender" = 13082607; "white" = 16777215;
+    };
+
+    if ($colors.ContainsKey($color)) {
+        $colorNumber = $colors.$color;
+    }
+
     if (($oldMessage -join "`n") -ne ($message -join "`n")) {
         # finally send each chunk of the message
         foreach ($chunk in $chunks) {
-            SendDiscordMessage -message $chunk -webhook $webhook -botName $botName
+            SendDiscordMessage -message $chunk -webhook $webhook -botName $botName -title $title -color $colorNumber
         }
 
         # if distinct, store the updated message for future checking

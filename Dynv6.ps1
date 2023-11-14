@@ -103,13 +103,13 @@ if ($old4 -eq $ipv4) {
     $events += "IPv4 address unchanged"
 } else {
     # send IPv4 address to dynv6
-    $events += "Updating IPv4"
     $body = @{
        zone = $zone
        token = $token
        ipv4 = $ipv4
     }
-    $events += Invoke-RestMethod -Method Get -Uri $update4 -Body $body
+    $msg = Invoke-RestMethod -Method Get -Uri $update4 -Body $body
+    $events += "Updating IPv4: " + $msg
 
     # save current IPv4 address
     Out-File -FilePath $file4 -InputObject $ipv4
@@ -120,13 +120,13 @@ if ($old6 -eq $ipv6) {
     $events += "IPv6 address unchanged"
 } else {
     # send IPv6 address to dynv6
-    $events += "Updating IPv6"
     $body = @{
        zone = $zone
        token = $token
        ipv6 = $ipv6
     }
-    $events += Invoke-RestMethod -Method Get -Uri $update6 -Body $body
+    $msg = Invoke-RestMethod -Method Get -Uri $update6 -Body $body
+    $events += "Updating IPv6: " + $msg
 
     # save current IPv6 address
     Out-File -FilePath $file6 -InputObject $ipv6
