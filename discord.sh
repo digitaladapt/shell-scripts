@@ -130,8 +130,11 @@ if [[ "$message" = '"\n"' ]]; then
     # message empty, so denote as such
     message='"\ud83d\udea9 MESSAGE EMPTY \ud83d\udea9"'
 else
+    if [[ "$message" = *"\\u001b"* ]]; then
+        prefix="ansi\n"
+    fi
     # wrap message into "ansi" block, for text color support
-    message="\"\`\`\`ansi\n${message:1:-1}\n\`\`\`\""
+    message="\"\`\`\`$prefix${message:1:-1}\`\`\`\""
 fi
 
 # handle distinct stuff
