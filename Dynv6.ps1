@@ -47,7 +47,8 @@ param(
     [string] $netmask = "128",
     [object] $logFile = "$env:USERPROFILE\\.dynv6.log",
     [string] $ipv4 = "",
-    [string] $ipv6 = ""
+    [string] $ipv6 = "",
+    [switch] $quiet
 )
 
 # load in defaults from config
@@ -100,7 +101,9 @@ $ipv6 = "$ipv6/$netmask"
 
 # update IPv4, if changed
 if ($old4 -eq $ipv4) {
-    $events += "IPv4 address unchanged"
+    if ( ! $quiet) {
+        $events += "IPv4 address unchanged"
+    }
 } else {
     # send IPv4 address to dynv6
     $body = @{
@@ -117,7 +120,9 @@ if ($old4 -eq $ipv4) {
 
 # update IPv6, if changed
 if ($old6 -eq $ipv6) {
-    $events += "IPv6 address unchanged"
+    if ( ! $quiet) {
+        $events += "IPv6 address unchanged"
+    }
 } else {
     # send IPv6 address to dynv6
     $body = @{
@@ -135,5 +140,6 @@ if ($old6 -eq $ipv6) {
 if ($logFile) {
     Out-File -FilePath $logFile -Append -InputObject ($events -join "`n")
 }
-echo ($events -join "`n")
-
+if ($events.count -gt 0) {
+    echo ($events -join "`n")
+}

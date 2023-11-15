@@ -31,7 +31,8 @@ param (
     [string] $webhook = "",
     [string] $botName = "",
     [string] $color   = "",
-    [string] $title   = ""
+    [string] $title   = "",
+    [switch] $quiet
 )
 begin {
     $chunk = ""
@@ -56,7 +57,7 @@ begin {
 process {
     # build up the full message
     foreach ($line in $message) {
-        if ($chunk.length + $line.length -gt 1800) {
+        if ($chunk.length + $line.length -gt 3600) {
             # if adding the line will make it too long, queue existing chunk and reset
             $chunks += $chunk
             $chunk = ""
@@ -94,7 +95,10 @@ end {
     if (($oldMessage -join "`n") -ne ($message -join "`n")) {
         # finally send each chunk of the message
         foreach ($chunk in $chunks) {
-            SendDiscordMessage -message $chunk -webhook $webhook -botName $botName -title $title -color $colorNumber
+            # if quiet flag given, and trimmed content is empty then skip, (normally) otherwise send message
+            if ($chunk.trim() || ! $quiet) {
+                SendDiscordMessage -message $chunk -webhook $webhook -botName $botName -title $title -color $colorNumber
+            }
         }
 
         # if distinct, store the updated message for future checking
