@@ -105,6 +105,8 @@ end {
         if ($distinct) {
             Out-File -FilePath $distinctFile -InputObject $message
         }
+    } elseif ($distinct) {
+        echo "duplicate message"
     }
 }
 

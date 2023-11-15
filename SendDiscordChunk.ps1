@@ -16,7 +16,7 @@ function SendDiscordMessage
 
     # convert string into json, escaping the given message
     $title   = ConvertTo-Json -InputObject $title
-    $message = ConvertTo-Json -InputObject $message
+    $message = ConvertTo-Json -InputObject $message.trim()
     $botName = ConvertTo-Json -InputObject $botName
 
     # rewrite json string, because "\u001b[m" needs to "\u001b[0m" instead
@@ -24,29 +24,34 @@ function SendDiscordMessage
     $message = $message -Replace "\\u001b\[m", "\u001b[0m"
 
     # only enable colors if needed
-    $prefix = '';
+    $prefix = ''
     if ($message -contains "\u001b") {
-        $prefix = 'ansi\n';
+        $prefix = 'ansi\n'
     }
 
-    # remove wrapping quotes around json string, replace with color-enabled block quotes
-    $message = '"```' + $prefix + $message.SubString(1, $message.length - 2) + '\n```"'
+    if ($message -eq '""') {
+        # message empty, so denote as such
+        $message = '"\ud83d\udea9 MESSAGE EMPTY \ud83d\udea9"'
+    } else {
+        # remove wrapping quotes around json string, replace with color-enabled block quotes
+        $message = '"```' + $prefix + $message.SubString(1, $message.length - 2) + '\n```"'
+    }
 
     # build post data: {"username": "$botName", "content": "$message"}
-    $content = "{";
-    if ($botName) {
-        $content += '"username": ' + $botName + ', ';
+    $content = "{"
+    if ($botName -ne '""') {
+        $content += '"username": ' + $botName + ', '
     }
-    $content += '"embeds": [{"description": ' + $message;
+    $content += '"embeds": [{"description": ' + $message
 
     if ($color -ge 0) {
-        $content += ', "color": ' + $color;
+        $content += ', "color": ' + $color
     }
-    if ($title) {
-        $content += ', "title": ' + $title;
+    if ($title -ne '""') {
+        $content += ', "title": ' + $title
     }
 
-    $content += '}]}';
+    $content += '}]}'
 
     # post data is complex, so we have to pipe it into curl
     # display the resulting id/message returned from Discord

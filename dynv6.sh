@@ -1,5 +1,15 @@
 #!/bin/sh
 
+quiet=false
+while getopts 'q' flag; do
+    case "$flag" in
+        q)
+            quiet=true
+            ;;
+    esac
+done
+shift "$((OPTIND-1))"
+
 # we need zone and token, we also accept, netmask, and overrides
 zone=$1
 device=$2
@@ -7,7 +17,8 @@ scope=$3
 
 # stop if we do not have the required information
 if [ -z "$zone" -o -z "$token" ]; then
-    echo "Usage: token=<your-authentication-token> [netmask=64] [ipv4=<override>] [ipv6=<override>] $0 your-name.dynv6.net [device] [scope]"
+    echo '"-q": quiet flag, to suppress "address unchanged" messages'
+    echo "Usage: token=<your-authentication-token> [netmask=64] [ipv4=<override>] [ipv6=<override>] $0 your-name.dynv6.net [-q] [device] [scope]"
     exit 1
 fi
 
@@ -73,7 +84,9 @@ ipv6="$ipv6/$netmask"
 
 # update IPv4, if changed
 if [ "$old4" = "$ipv4" ]; then
-    echo "IPv4 address unchanged"
+    if [ "$quiet" = false ]; then
+        echo "IPv4 address unchanged"
+    fi
 else
     # send IPv4 address to dynv6
     echo -n "Updating IPv4: "
@@ -86,7 +99,9 @@ fi
 
 # update IPv6, if changed
 if [ "$old6" = "$ipv6" ]; then
-    echo "IPv6 address unchanged"
+    if [ "$quiet" = false ]; then
+        echo "IPv6 address unchanged"
+    fi
 else
     # send IPv6 address to dynv6
     echo -n "Updating IPv6: "

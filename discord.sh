@@ -9,6 +9,7 @@
 #                          cyan(#00ffff),    blue(#0343df),   purple(#7e1e9c), magenta(#c20078),  grey(#929591),
 # LIGHT:  pink(#ff81c0),   apricot(#ffb16d), beige(#e6daa6),  mint(#9ffeb0),   lavender(#c79fef), white(#ffffff).
 
+quiet=false
 skipMsg=false
 declare -A colors
 colors=(
@@ -23,7 +24,7 @@ print_usage() {
 }
 
 # handle all arguments provided
-while getopts 'h:c:d:t:z' flag; do
+while getopts 'h:c:d:t:zq' flag; do
     case "$flag" in
         h)
             if [[ "$OPTARG" == "http"*"?wait=true" ]]; then
@@ -67,6 +68,9 @@ while getopts 'h:c:d:t:z' flag; do
         z)
             skipMsg=true
             ;;
+        q)
+            quiet=true
+            ;;
         *)
             echo "unknown option provided '$flag'"
             print_usage
@@ -103,7 +107,8 @@ if [[ -z "$message" ]] && [[ "$skipMsg" = false ]]; then
 fi
 
 # sed removes blank lines from the end of the message
-fullMsg=$(echo "$message" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+message=$(echo "$message" | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}')
+fullMsg="$message"
 
 # if message is too long, split it, and after curl, recursively call with remainder
 # 4k max, but we must account for escaping text in json, so limit to 90% capacity
@@ -127,8 +132,13 @@ fi
 message=$(echo "$message" | jq -aRs . | sed 's/\\u001b\[m/\\u001b[0m/g')
 
 if [[ "$message" = '"\n"' ]]; then
-    # message empty, so denote as such
-    message='"\ud83d\udea9 MESSAGE EMPTY \ud83d\udea9"'
+    if [[ "$quiet" = true ]]; then
+        # quiet was specified, and there was no message, so stop now
+        exit 0
+    else
+        # message empty, so denote as such
+        message='"\ud83d\udea9 MESSAGE EMPTY \ud83d\udea9"'
+    fi
 else
     if [[ "$message" = *"\\u001b"* ]]; then
         prefix="ansi\n"
