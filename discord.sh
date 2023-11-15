@@ -90,6 +90,9 @@ if [[ -f "$configFile" ]]; then
     if [[ -z "$hookUrl" ]]; then
         hookUrl="$DISCORD_GENERAL_HOOK"
     fi
+    if [[ -n "$title" ]]; then
+        title="$title $DISCORD_TITLE_SUFFIX"
+    fi
 fi
 
 # stop if we have no hook to send message to

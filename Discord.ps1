@@ -49,6 +49,9 @@ begin {
         if ( ! $botName) {
             $botName = $DISCORD_SERVER_NAME
         }
+        if ($title) {
+            $title = "$title $DISCORD_TITLE_SUFFIX"
+        }
     }
 
     # load internal function
