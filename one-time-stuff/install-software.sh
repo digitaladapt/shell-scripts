@@ -62,7 +62,7 @@ echo "----- Install nginx ---------------------------------"
 install_collection 'nginx web-server' nginx
 
 echo "----- Install certbot via pip, in /opt/certbot/ -----"
-read -p 'Install certbot, certbot-nginx, and certbot-dns-google-domain to /opt/certbot/ via pip in virtual environment? [y/N]: ' certbot_install
+read -p 'Install certbot, certbot-nginx, certbot-dns-google-domain, and certbot-dns-cloudflare to /opt/certbot/ via pip in virtual environment? [y/N]: ' certbot_install
 case $certbot_install in
     [Yy]* )
         if [ $called_update = false ]; then
@@ -76,7 +76,7 @@ case $certbot_install in
         # see: https://certbot.eff.org/instructions?ws=nginx&os=pip
         sudo python3 -m venv /opt/certbot/
         sudo /opt/certbot/bin/pip install --upgrade pip
-        sudo /opt/certbot/bin/pip install certbot certbot-nginx certbot-dns-google-domains
+        sudo /opt/certbot/bin/pip install certbot certbot-nginx certbot-dns-google-domains certbot-dns-cloudflare
         sudo ln -s /opt/certbot/bin/certbot /usr/bin/certbot
         (
         cat << 'CRON'
