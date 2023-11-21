@@ -56,7 +56,7 @@ echo "----- Install core utilities: curl, vim, git, python3.. ---"
 install_collection 'core utilities' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
 
 echo "----- Install extra utilities: ncdu, zip, iftop -----"
-install_collection 'extra utilities' ncdu zip unzip iftop colorized-logs php-cli ca-certificates curl gnupg lsb-release
+install_collection 'extra utilities' ncdu zip unzip iftop colorized-logs php-cli ca-certificates curl gnupg lsb-release rclone
 
 echo "----- Install nginx ---------------------------------"
 install_collection 'nginx web-server' nginx
