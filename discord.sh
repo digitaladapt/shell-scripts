@@ -20,7 +20,7 @@ colors=(
 )
 
 print_usage() {
-    echo "Usage: $0 [-h hook-url], [-c color], [-d [distinct-name]] [-t title] (message... | -z | < file.msg)"
+    echo "Usage: $0 [-h hook-url] [-c color] [-d [distinct-name]] [-t title] (message... | -z | < file.msg)"
 }
 
 # handle all arguments provided
