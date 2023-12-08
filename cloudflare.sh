@@ -130,6 +130,13 @@ results=$(curl --silent --request GET \
 
 if [[ -z "$regex" ]]; then
     newContent="$content"
+
+    if [[ -z "$newContent" ]]; then
+        if [[ "$quiet" = false ]]; then
+            echo 'Content calculated to blank string, stopping.'
+        fi
+        exit 1
+    fi
 fi
 
 while read -r result; do
@@ -145,6 +152,13 @@ while read -r result; do
     name=$(echo "$result" | jq -r '.name')
     if [[ -n "$regex" ]]; then
         newContent=$(echo "$oldContent" | sed -E "s/$regex/$content/g")
+
+        if [[ -z "$newContent" ]]; then
+            if [[ "$quiet" = false ]]; then
+                echo 'Content calculated to blank string, skipping.'
+            fi
+            continue
+        fi
         # echo "current '$oldContent'"
         # echo "find    '$regex'"
         # echo "replace '$content'"
