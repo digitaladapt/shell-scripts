@@ -3,8 +3,11 @@
 # there are a few different ways to resolve public-ip,
 # keep trying until we get a result
 
+# device info
+address=$(ip -6 addr list scope global | grep -v " fd" | sed -n 's/.*inet6 \([0-9a-f:]\+\).*/\1/p' | head -n 1)
+
 # dig
-if [[ -n $(command -v "dig") ]]; then
+if [[ -z "$address" ]] && [[ -n $(command -v "dig") ]]; then
     # via opendns
     address=$(dig "@resolver1.opendns.com" -6 "myip.opendns.com" "AAAA" "+short")
     if [[ "$?" -ne "0" ]]; then
