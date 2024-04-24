@@ -122,18 +122,19 @@ esac
 # ----------------------------------------------------------
 
 echo "----- Setup robust bash history? in ~/.bashrc -------"
-read -p 'split bash history by tty in realtime? [y/N]: ' add_history
+read -p 'split bash history by terminal/screen in realtime? [y/N]: ' add_history
 case $add_history in
     [Yy]* )
-        echo 'Backing up ~/.bashrc'
-        cp "$HOME/.bashrc" "$HOME/.bashrc.backup"
+        if [[ -f "$HOME/.bash_history" ]]; then
+            echo 'Backing up ~/.bashrc'
+            cp "$HOME/.bashrc" "$HOME/.bashrc.backup"
 
-        echo 'Comment existing history config'
-        sed -i '/^\(HISTCONTROL\|HISTFILESIZE\|HISTFILE\|HISTIGNORE\|HISTSIZE\|HISTTIMEFORMAT\|shopt -s histappend\|shopt -s histreedit\|shopt -s histverify\)/s/^/# ABS #/' "$HOME/.bashrc"
+            echo 'Comment existing history config'
+            sed -i '/^\(HISTCONTROL\|HISTFILESIZE\|HISTFILE\|HISTIGNORE\|HISTSIZE\|HISTTIMEFORMAT\|shopt -s histappend\|shopt -s histreedit\|shopt -s histverify\)/s/^/# ABS #/' "$HOME/.bashrc"
 
-        echo 'Appending ~/.bashrc'
-        (
-        cat << 'TERM'
+            echo 'Appending ~/.bashrc'
+            (
+            cat << 'TERM'
 
 # ABS improved shell history
 shopt -s histappend         # append to the history file, don't overwrite it
@@ -141,7 +142,14 @@ HISTSIZE=10000              # cache    the last  10,000 commands
 HISTFILESIZE=100000         # remember the last 100,000 commands
 HISTCONTROL="ignoredups"    # ignore duplicates
 HISTIGNORE="l:la:ll:ls:cd:clear:history:pwd" # ignore select simple commands
-HISTFILE="${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"    # bash_history as folder split by tty
+
+# if we are in a screen, this will get its name, with any slashes replaced with dashes
+current_terminal_name=$(screen -ls | grep '(Attached)' | cut -d . -f 2 | cut -d '(' -f 1 | xargs | sed 's/\//-/g;s/^-//g')
+if [[ -z "$current_terminal_name" ]]; then
+    # not actively in a screen, so use the terminal name instead
+    current_terminal_name=$(tty | sed 's/\//-/g;s/^-//g')
+fi
+HISTFILE="${HOME}/.bash_history/$current_terminal_name"    # bash_history as folder split by terminal name
 
 # if we have already sourced this file, don't do it again
 if [[ "${PROMPT_COMMAND}" != *"history"* ]]; then
@@ -156,24 +164,34 @@ fi
 TERM
 ) >> "$HOME/.bashrc"
 
-        echo 'Move existing history file'
-        if [ -f "${HOME}/.bash_history" ]; then
-            mv "${HOME}/.bash_history" "$HOME/tmp_hist_file"
-        fi
-        mkdir "${HOME}/.bash_history"
-        mv "$HOME/tmp_hist_file" "${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"
+            # if we are in a screen, this will get its name, with any slashes replaced with dashes
+            current_terminal_name=$(screen -ls | grep '(Attached)' | cut -d . -f 2 | cut -d '(' -f 1 | xargs | sed 's/\//-/g;s/^-//g')
+            if [[ -z "$current_terminal_name" ]]; then
+                # not actively in a screen, so use the terminal name instead
+                current_terminal_name=$(tty | sed 's/\//-/g;s/^-//g')
+            fi
 
-        echo 'Update live config'
-        shopt -s histappend
-        shopt -u histreedit
-        shopt -u histverify
-        export HISTSIZE=10000
-        export HISTFILESIZE=100000
-        export HISTCONTROL="ignoredups"
-        export HISTIGNORE="l:la:ll:ls *:clear:history:pwd"
-        export HISTFILE="${HOME}/.bash_history/$(tty | sed 's/\//-/g;s/^-//g')"
-        if [[ "${PROMPT_COMMAND}" != *"history"* ]]; then
-            export PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND/%;};}history -a"
+            echo 'Move existing history file'
+            if [ -f "${HOME}/.bash_history" ]; then
+                mv "${HOME}/.bash_history" "$HOME/tmp_hist_file"
+            fi
+            mkdir "${HOME}/.bash_history"
+            mv "$HOME/tmp_hist_file" "${HOME}/.bash_history/$current_terminal_name"
+
+            echo 'Update live config'
+            shopt -s histappend
+            shopt -u histreedit
+            shopt -u histverify
+            export HISTSIZE=10000
+            export HISTFILESIZE=100000
+            export HISTCONTROL="ignoredups"
+            export HISTIGNORE="l:la:ll:ls *:clear:history:pwd"
+            export HISTFILE="${HOME}/.bash_history/$current_terminal_name"
+            if [[ "${PROMPT_COMMAND}" != *"history"* ]]; then
+                export PROMPT_COMMAND="${PROMPT_COMMAND:+${PROMPT_COMMAND/%;};}history -a"
+            fi
+        else # HISTFILE is already customized
+            echo 'WARNING: ~/.bash_history is not a file, history has already been customized, skipping.'
         fi
 
         ;;
