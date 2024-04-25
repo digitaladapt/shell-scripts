@@ -213,7 +213,7 @@ esac
 # ----------------------------------------------------------
 
 echo "----- Add symlink for ssh-ident as ssh --------------"
-read -p 'Add "ssh alias for ssh-ident"? (REQUIRES python) [y/N]: ' add_ident
+read -p 'Add "ssh alias for ssh-ident"? (also set python3 as python) [y/N]: ' add_ident
 case $add_ident in
     [Yy]* )
         if [[ ! -f "$HOME/bin/ssh" ]]; then
@@ -222,6 +222,7 @@ case $add_ident in
         else
             echo 'home bin already has ssh, skipping'
         fi
+        sudo apt install python-is-python3
         ;;
     * )
         echo 'Skipping'
