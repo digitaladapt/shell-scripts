@@ -236,9 +236,6 @@ read -p 'split bash history by terminal/screen in realtime? [y/N]: ' add_history
 case $add_history in
     [Yy]* )
         if [[ -f "$HOME/.bash_history" ]]; then
-            echo 'Backing up ~/.bashrc'
-            cp "$HOME/.bashrc" "$HOME/.bashrc.backup"
-
             echo 'Comment existing history config'
             sed -i '/^\(HISTCONTROL\|HISTFILESIZE\|HISTFILE\|HISTIGNORE\|HISTSIZE\|HISTTIMEFORMAT\|shopt -s histappend\|shopt -s histreedit\|shopt -s histverify\)/s/^/# ABS #/' "$HOME/.bashrc"
 
