@@ -22,7 +22,7 @@ case $response in
         # Create docker group, and add yourself to it
         sudo groupadd docker
         sudo usermod -aG docker $USER
-        newgrp docker
+        echo 'You will need to logout and back in before the "docker" group will show up'
 
         ;;
     * )

@@ -1,6 +1,112 @@
 #!/bin/bash
 # configure basic settings, will prompt for input
 
+# setup symlinks, if not installed in users bin directory
+# need absolute path, so the symbolic links will be created correctly.
+script_dir=$(readlink -f "$0" | xargs dirname | xargs dirname)
+
+if [[ ! -d "$HOME/bin" ]]; then
+    echo 'making personal bin directory'
+    mkdir -p "$HOME/bin"
+fi
+
+# --- general scripts ---
+if [[ ! -f "$HOME/bin/4-public-ip.sh" ]]; then
+    echo 'installing 4-public-ip.sh'
+    ln -s "$script_dir/4-public-ip.sh" "$HOME/bin/4-public-ip.sh"
+fi
+
+if [[ ! -f "$HOME/bin/6-public-ip.sh" ]]; then
+    echo 'installing 6-public-ip.sh'
+    ln -s "$script_dir/6-public-ip.sh" "$HOME/bin/6-public-ip.sh"
+fi
+
+if [[ ! -f "$HOME/bin/enumerate.sh" ]]; then
+    echo 'installing enumerate.sh'
+    ln -s "$script_dir/enumerate.sh" "$HOME/bin/enumerate.sh"
+fi
+
+if [[ ! -f "$HOME/bin/is-restart-needed.sh" ]]; then
+    echo 'installing is-restart-needed.sh'
+    ln -s "$script_dir/is-restart-needed.sh" "$HOME/bin/is-restart-needed.sh"
+fi
+
+if [[ ! -f "$HOME/bin/named-cat.sh" ]]; then
+    echo 'installing named-cat.sh'
+    ln -s "$script_dir/named-cat.sh" "$HOME/bin/named-cat.sh"
+fi
+
+if [[ ! -f "$HOME/bin/restart-if-needed.sh" ]]; then
+    echo 'installing restart-if-needed.sh'
+    ln -s "$script_dir/restart-if-needed.sh" "$HOME/bin/restart-if-needed.sh"
+fi
+
+if [[ ! -f "$HOME/bin/upgrade.sh" ]]; then
+    echo 'installing upgrade.sh'
+    ln -s "$script_dir/upgrade.sh" "$HOME/bin/upgrade.sh"
+fi
+
+# --- git related scripts ---
+if [[ ! -f "$HOME/bin/fetch-all.sh" ]]; then
+    echo 'installing fetch-all.sh'
+    ln -s "$script_dir/fetch-all.sh" "$HOME/bin/fetch-all.sh"
+fi
+
+if [[ ! -f "$HOME/bin/list-all.sh" ]]; then
+    echo 'installing list-all.sh'
+    ln -s "$script_dir/list-all.sh" "$HOME/bin/list-all.sh"
+fi
+
+if [[ ! -f "$HOME/bin/pull-all.sh" ]]; then
+    echo 'installing pull-all.sh'
+    ln -s "$script_dir/pull-all.sh" "$HOME/bin/pull-all.sh"
+fi
+
+if [[ ! -f "$HOME/bin/status-all.sh" ]]; then
+    echo 'installing status-all.sh'
+    ln -s "$script_dir/status-all.sh" "$HOME/bin/status-all.sh"
+fi
+
+# ----------------------------------------------------------
+
+# backup bashrc, but only the first run for the day
+curdate=$(date '+%Y-%m-%d')
+if [[ ! -f "$HOME/bashrc.backup.$curdate" ]]; then
+    echo 'backing up existing bashrc'
+    cp "$HOME/.bashrc" "$HOME/bashrc.backup.$curdate"
+fi
+
+read -p 'Set umask in your bashrc to prevent global access? [y/N]: ' set_umask
+case $set_umask in
+    [Yy]* )
+        umask 0027
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'TERM'
+
+# ABS umask
+umask 0027
+
+TERM
+) >> "$HOME/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+read -p 'Fix permissions of files already in your home directory? [y/N]: ' set_permissions
+case $set_permissions in
+    [Yy]* )
+        chmod -R o-rwx "$HOME"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 echo "----- GIT Global Config, Name and Email -------------"
 read -p 'Name for GIT (leave blank to skip): ' git_name
 if [[ ! -z "$git_name" ]]; then
@@ -48,19 +154,19 @@ case $set_cache in
         ;;
 esac
 
-# ----------------------------------------------------------
-
-echo "----- User Groups (requires sudo) -------------------"
-read -p 'Add yourself to "www-data" group? [y/N]: ' add_www
-case $add_www in
-    [Yy]* )
-        echo 'Adding to group'
-        sudo usermod -a -G www-data `whoami`
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
+## ----------------------------------------------------------
+#
+#echo "----- User Groups (requires sudo) -------------------"
+#read -p 'Add yourself to "www-data" group? [y/N]: ' add_www
+#case $add_www in
+#    [Yy]* )
+#        echo 'Adding to group'
+#        sudo usermod -a -G www-data `whoami`
+#        ;;
+#    * )
+#        echo 'Skipping'
+#        ;;
+#esac
 
 # ----------------------------------------------------------
 
@@ -110,9 +216,12 @@ echo "----- Add symlink for ssh-ident as ssh --------------"
 read -p 'Add "ssh alias for ssh-ident"? (REQUIRES python) [y/N]: ' add_ident
 case $add_ident in
     [Yy]* )
-        echo 'Creating ssh symlink to ssh-ident'
-        LOCATION=`dirname "$0"`
-        (cd "${LOCATION}/.."  && ln -s "ccontavalli-ssh-ident/ssh-ident" "ssh")
+        if [[ ! -f "$HOME/bin/ssh" ]]; then
+            echo 'Creating ssh symlink to ssh-ident'
+            ln -s "$script_dir/ssh-ident" "$HOME/bin/ssh"
+        else
+            echo 'home bin already has ssh, skipping'
+        fi
         ;;
     * )
         echo 'Skipping'
@@ -278,20 +387,20 @@ VIM
         ;;
 esac
 
-# ----------------------------------------------------------
-
-echo "----- Install GoAccess configuration ----------------"
-read -p 'Add GoAccess RC config file? [y/N]: ' set_gorc
-case $set_gorc in
-    [Yy]* )
-        echo 'Installing GoAccess RC'
-        LOCATION=`dirname "$0"`
-        cp "${LOCATION}/conf/goaccessrc" "${HOME}/.goaccessrc"
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
+## ----------------------------------------------------------
+#
+#echo "----- Install GoAccess configuration ----------------"
+#read -p 'Add GoAccess RC config file? [y/N]: ' set_gorc
+#case $set_gorc in
+#    [Yy]* )
+#        echo 'Installing GoAccess RC'
+#        LOCATION=`dirname "$0"`
+#        cp "${LOCATION}/conf/goaccessrc" "${HOME}/.goaccessrc"
+#        ;;
+#    * )
+#        echo 'Skipping'
+#        ;;
+#esac
 
 # ----------------------------------------------------------
 
