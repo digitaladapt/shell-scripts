@@ -76,6 +76,65 @@ if [[ ! -f "$HOME/bashrc.backup.$curdate" ]]; then
     cp "$HOME/.bashrc" "$HOME/bashrc.backup.$curdate"
 fi
 
+# ----------------------------------------------------------
+
+echo "----- Download Git Prompt Script --------------------"
+read -p 'Add git prompt to bash config? [y/N]: ' set_prompt
+case $set_prompt in
+    [Yy]* )
+        echo 'Downloading Git Prompt'
+        LOCATION=`dirname "$0"`
+        [ ! -d "${HOME}/bin" ] && mkdir "${HOME}/bin"
+        wget 'https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh' -O "${HOME}/bin/git-prompt.sh" -q && ( cat << 'PROMPT'
+
+# ABS git prompt
+source ~/bin/git-prompt.sh
+
+PROMPT
+) >> "${HOME}/.bashrc"
+        chmod +x "${HOME}/bin/git-prompt.sh"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
+echo "----- Append prompt style to ~/.bashrc --------------"
+read -p 'Add prompt style to bash config? [y/N]: ' add_style
+case $add_style in
+    [Yy]* )
+        echo 'Appending ~/.bashrc'
+        (
+        cat << 'STYLE'
+
+# ABS prompt color
+abs_user="\e[31m\u"          # username (green/red)
+abs_host="\e[m@\e[36m\h"     # hostname (teal)
+abs_work="\e[m:\e[33m\w"     # work-dir (yellow)
+abs_git="\e[m(\e[35m%s\e[m)" # branch   (purple)
+abs_tail="\e[34m\$\e[m "     # $ or #   (blue)
+if [ -f "$HOME/.sudo_as_admin_successful" ]; then
+    abs_user="\e[32m\u" # username green if they can sudo, otherwise red
+fi
+
+if [ "$(type -t __git_ps1)" == 'function' ]; then
+    PROMPT_COMMAND="__git_ps1 \"$abs_user$abs_host$abs_work\" \"$abs_tail\" \"$abs_git\""
+else
+    PS1="$abs_user$abs_host$abs_work$abs_tail"
+fi
+
+STYLE
+) >> "$HOME/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+
+# ----------------------------------------------------------
+
 read -p 'Set umask in your bashrc to prevent global access? [y/N]: ' set_umask
 case $set_umask in
     [Yy]* )
@@ -399,60 +458,6 @@ esac
 #        echo 'Skipping'
 #        ;;
 #esac
-
-# ----------------------------------------------------------
-
-echo "----- Download Git Prompt Script --------------------"
-read -p 'Add git prompt to bash config? [y/N]: ' set_prompt
-case $set_prompt in
-    [Yy]* )
-        echo 'Downloading Git Prompt'
-        LOCATION=`dirname "$0"`
-        [ ! -d "${HOME}/bin" ] && mkdir "${HOME}/bin"
-        wget 'https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh' -O "${HOME}/bin/git-prompt.sh" -q && ( cat << 'PROMPT'
-
-# ABS git prompt
-source ~/bin/git-prompt.sh
-
-PROMPT
-) >> "${HOME}/.bashrc"
-        chmod +x "${HOME}/bin/git-prompt.sh"
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
-
-# ----------------------------------------------------------
-
-echo "----- Append prompt style to ~/.bashrc --------------"
-read -p 'Add prompt style to bash config? [y/N]: ' add_style
-case $add_style in
-    [Yy]* )
-        echo 'Appending ~/.bashrc'
-        (
-        cat << 'STYLE'
-
-# ABS prompt color
-if [ -f "$HOME/.sudo_as_admin_successful" ]; then
-    user_color="\[\e[32m\]"
-else
-    user_color="\[\e[31m\]"
-fi
-
-if [ "$(type -t __git_ps1)" == 'function' ]; then
-    PS1="$user_color\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]$(__git_ps1 "\[\e[m\](\[\e[35m\]%s\[\e[37m\])")\[\e[m\]\\$ "
-else
-    PS1="$user_color\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]\\$ "
-fi
-
-STYLE
-) >> "$HOME/.bashrc"
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
 
 # ----------------------------------------------------------
 
