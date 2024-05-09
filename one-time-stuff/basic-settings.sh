@@ -434,10 +434,16 @@ case $add_style in
         cat << 'STYLE'
 
 # ABS prompt color
-if [ "$(type -t __git_ps1)" == 'function' ]; then
-    PS1='\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]$(__git_ps1 "\[\e[m\](\[\e[35m\]%s\[\e[37m\])")\[\e[m\]\\$ '
+if [ -f "$HOME/.sudo_as_admin_successful" ]; then
+    user_color="\[\e[32m\]"
 else
-    PS1="\[\e[32m\]\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]\\$ "
+    user_color="\[\e[31m\]"
+fi
+
+if [ "$(type -t __git_ps1)" == 'function' ]; then
+    PS1="$user_color\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]$(__git_ps1 "\[\e[m\](\[\e[35m\]%s\[\e[37m\])")\[\e[m\]\\$ "
+else
+    PS1="$user_color\u\[\e[m\]@\[\e[36m\]\h\[\e[m\]:\[\e[33m\]\w\[\e[m\]\\$ "
 fi
 
 STYLE
