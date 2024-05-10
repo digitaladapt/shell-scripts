@@ -138,9 +138,17 @@ echo "----- Install Go Lang -------------------------------"
 read -p 'Install Go Lang? [y/N]: ' go_lang
 case $go_lang in
     [Yy]* )
+        echo "----- Determining current stable go version ---------"
+        # load json file with version info, filter to only stable versions, take the first (newest), strip to just numeric
+        go_version=$(wget --quiet --output-document - 'https://go.dev/dl/?mode=json' | jq -r '.[] | select( .stable ) | .version' | head -n 1 | sed 's/[^0-9.]*//g')
+        if [[ -n "$go_version" ]]; then
+            version_flag='--version'
+            echo "Installing Go Version: $go_version"
+        fi
+
         echo "----- Calling Go Install Script ---------------------"
         LOCATION=`dirname "$0"`
-        "${LOCATION}/../golang-install/goinstall.sh"
+        "${LOCATION}/../golang-install/goinstall.sh" "$version_flag" "$go_version"
         echo "----- Completed Go Install Script -------------------"
         ;;
     * )
