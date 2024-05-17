@@ -15,3 +15,45 @@ colorscheme colorful256
 map <esc>OH <home>
 map <esc>OF <end>
 
+call plug#begin()
+
+" highlight Caddyfile
+Plug 'isobit/vim-caddyfile'
+
+" show current nesting (in large functions)
+Plug 'wellle/context.vim'
+
+" improved file browser
+Plug 'preservim/nerdtree'
+
+" git commands in vim
+Plug 'tpope/vim-fugitive'
+
+" line group alignment
+Plug 'junegunn/vim-easy-align'
+
+" git line status in number line
+Plug 'airblade/vim-gitgutter'
+
+" better status bar
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+
+call plug#end()
+
+" config git-gutter
+let g:gitgutter_terminal_reports_focus=0
+set updatetime=500
+set signcolumn=number
+set number
+
+" style git-gutter
+highlight LineNr          cterm=reverse ctermfg=240 ctermbg=none gui=reverse guifg=#585858 guibg=#000000
+highlight SignColumn      cterm=reverse ctermfg=255 ctermbg=none gui=reverse guifg=#eeeeee guibg=#000000
+highlight GitGutterAdd    cterm=reverse ctermfg=2   ctermbg=none gui=reverse guifg=#008000 guibg=#000000
+highlight GitGutterChange cterm=reverse ctermfg=3   ctermbg=none gui=reverse guifg=#808000 guibg=#000000
+highlight GitGutterDelete cterm=reverse ctermfg=1   ctermbg=none gui=reverse guifg=#800000 guibg=#000000
+
+" style vim-airline
+let g:airline_theme='light'
+

@@ -411,7 +411,7 @@ esac
 # ----------------------------------------------------------
 
 echo "----- Install vim configuration ---------------------"
-read -p 'Setup vim, colors, defaults, etc? [y/N]: ' set_vim
+read -p 'Setup vim, colors, plugins, defaults, etc? [y/N]: ' set_vim
 case $set_vim in
     [Yy]* )
         echo 'Appending ~/.bashrc'
@@ -432,12 +432,27 @@ VIM
         LOCATION=`dirname "$0"`
         cp "${LOCATION}/vim/colorful256.vim" "${HOME}/.vim/colors/colorful256.vim"
 
-	echo 'Installing vimrc'
-	if [ -f "${HOME}/.vimrc" ]; then
-	    echo 'existing vimrc file detected, backing up'
-	    mv "${HOME}/.vimrc" "${HOME}/.vimrc_`date +%s`"
-	fi
+        echo 'Installing plugin manager "vim-plug"'
+        mkdir -p "${HOME}/.vim/autoload"
+        if [[ -n $(command -v "jq") ]]; then
+            # prefer to download the latest release tag
+            version=$(curl --silent 'https://api.github.com/repos/junegunn/vim-plug/releases/latest' | jq -r '.tag_name')
+        fi
+        if [[ -z "$version" ]]; then
+            # but fallback to main branch
+            version="master"
+        fi
+        curl --output "$HOME/.vim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/$version/plug.vim"
+
+        echo 'Installing vimrc'
+        if [ -f "${HOME}/.vimrc" ]; then
+            echo 'existing vimrc file detected, backing up'
+            mv "${HOME}/.vimrc" "${HOME}/.vimrc_`date +%s`"
+        fi
         cp "${LOCATION}/vim/vimrc" "${HOME}/.vimrc"
+
+        echo 'Installing default plugins'
+        vim +'PluginInstall --sync' +quitall
         ;;
     * )
         echo 'Skipping'
