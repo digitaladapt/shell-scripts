@@ -452,7 +452,7 @@ VIM
         cp "${LOCATION}/vim/vimrc" "${HOME}/.vimrc"
 
         echo 'Installing default plugins'
-        vim +'PluginInstall --sync' +quitall
+        vim +'PlugInstall --sync' +quitall
         ;;
     * )
         echo 'Skipping'
