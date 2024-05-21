@@ -445,9 +445,9 @@ VIM
         curl --output "$HOME/.vim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/$version/plug.vim"
 
         echo 'Installing vimrc'
-        if [ -f "${HOME}/.vimrc" ]; then
+        if [[ -f "$HOME/.vimrc" ]] && [[ ! -f "$HOME/vimrc.backup.$curdate" ]]; then
             echo 'existing vimrc file detected, backing up'
-            mv "${HOME}/.vimrc" "${HOME}/.vimrc_`date +%s`"
+            mv "$HOME/.vimrc" "$HOME/vimrc.backup.$curdate"
         fi
         cp "${LOCATION}/vim/vimrc" "${HOME}/.vimrc"
 
