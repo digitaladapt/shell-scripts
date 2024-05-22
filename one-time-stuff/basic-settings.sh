@@ -110,13 +110,13 @@ case $add_style in
         cat << 'STYLE'
 
 # ABS prompt color
-abs_user="\e[31m\u"          # username (green/red)
-abs_host="\e[m@\e[36m\h"     # hostname (teal)
-abs_work="\e[m:\e[33m\w"     # work-dir (yellow)
-abs_git="\e[m(\e[35m%s\e[m)" # branch   (purple)
-abs_tail="\e[34m\$\e[m "     # $ or #   (blue)
-if [ -f "$HOME/.sudo_as_admin_successful" ]; then
-    abs_user="\e[32m\u" # username green if they can sudo, otherwise red
+abs_user="\[\e[31m\]\u"                  # username (red)
+abs_host="\[\e[m\]@\[\e[36m\]\h"         # hostname (teal)
+abs_work="\[\e[m\]:\[\e[33m\]\w"         # work-dir (yellow)
+abs_git="\[\e[m\](\[\e[35m\]%s\[\e[m\])" # branch   (purple)
+abs_tail="\[\e[34m\]\$\[\e[m\] "         # $ or #   (blue)
+if [[ -f "$HOME/.sudo_as_admin_successful" ]] || [[ "0" == $(id -u) ]]; then
+    abs_user="\[\e[32m\]\u" # username (green) if sudo/root
 fi
 
 if [ "$(type -t __git_ps1)" == 'function' ]; then
