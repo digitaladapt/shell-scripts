@@ -5,15 +5,20 @@
 # just listing where repos are located, and their remote.
 #
 # will only search symbolic links when passed "-l" option, must be before any locations
-# list-all.sh [-l] # current location implied
-# list-all.sh [-l] ~/my-projects /var/group-projects
+# will only search hidden directories when passed "-h" option, must be before any locations
+# list-all.sh [-l][-h] # current location implied
+# list-all.sh [-l][-h] ~/my-projects /var/group-projects
 
-# check for "-l" in command prompt
+# check for "-l" and "-h" in command prompt
 followLinks="-H"
-while getopts "l" option; do
+checkHidden="-not -path */.*/.git"
+while getopts "lh" option; do
     case $option in
         l)
             followLinks="-L"
+            ;;
+        h)
+            checkHidden=""
             ;;
     esac
 done
@@ -21,6 +26,10 @@ shift "$((OPTIND-1))"
 
 if [[ "-H" == "$followLinks" ]]; then
     echo "use -l to follow symbolic links"
+fi
+
+if [[ -n "$checkHidden" ]]; then
+    echo "use -h to check hidden directories"
 fi
 
 # function to process each location
@@ -39,5 +48,5 @@ function process_git_list () {
 # and call process_git_list on each location that was found.
 # we then work on the folder that contained the ".git" folder.
 
-find "$followLinks" "$@" -type d -name ".git" | while read -r file; do process_git_list "$file"; done
+find "$followLinks" "$@" -type d -name ".git" $checkHidden | while read -r file; do process_git_list "$file"; done
 
