@@ -57,3 +57,7 @@ highlight GitGutterDelete cterm=reverse ctermfg=1   ctermbg=none gui=reverse gui
 " style vim-airline
 let g:airline_theme='light'
 
+" style context
+let g:context_ellipsis_char='•'
+let g:context_border_char='═'
+

@@ -12,6 +12,10 @@ print_usage() {
     echo "Usage: [token=<token-config-override>] [zone=<zone-config-override>] [prefix=<filter-prefix-override>] $0 [-q] [-f 'query-filters'] ('content' | 'regex-replace' 'regex-find')"
 }
 
+# known private ranges
+local4='192.168.0.0/16 172.16.0.0/12 10.0.0.0/8'
+local6='fc00::/7 fe80::/10'
+
 # handle all arguments provided
 while getopts 'f:qt' flag; do
     case "$flag" in
@@ -69,6 +73,14 @@ fi
 if [[ "$content" = *'<a>'* ]]; then
     ipv4=$("$scriptRoot/4-public-ip.sh")
     content=$(echo "$content" | sed "s/<a>/$ipv4/g")
+
+    # check if address is actually public
+    if [[ -n $(command -v "grepcidr") ]]; then
+        if [[ -z $(echo "$ipv4" | grepcidr -v "$local4") ]]; then
+            echo "IPv4 lookup failed, stopping"
+            exit 2
+        fi
+    fi
 fi
 
 # limit 1
@@ -77,12 +89,28 @@ if [[ "$content" = *'<a:'* ]]; then
     domain=$(echo "$content" | grep -oP '(?<=\<a:)[^>]+(?=\>)')
     ipv4=$(dig +short A "$domain" | head -n 1)
     content=$(echo "$content" | sed "s/<a:$domain>/$ipv4/g")
+
+    # check if address is actually public
+    if [[ -n $(command -v "grepcidr") ]]; then
+        if [[ -z $(echo "$ipv4" | grepcidr -v "$local4") ]]; then
+            echo "IPv4 lookup for '$domain' failed, stopping"
+            exit 2
+        fi
+    fi
 fi
 
 # "<aaaa>" becomes current public ipv6
 if [[ "$content" = *'<aaaa>'* ]]; then
     ipv6=$("$scriptRoot/6-public-ip.sh")
     content=$(echo "$content" | sed "s/<aaaa>/$ipv6/g")
+
+    # check if address is actually public
+    if [[ -n $(command -v "grepcidr") ]]; then
+        if [[ -z $(echo "$ipv6" | grepcidr -v "$local6") ]]; then
+            echo "IPv6 lookup failed, stopping"
+            exit 2
+        fi
+    fi
 fi
 
 # limit 1
@@ -91,6 +119,14 @@ if [[ "$content" = *'<aaaa:'* ]]; then
     domain=$(echo "$content" | grep -oP '(?<=\<aaaa:)[^>]+(?=\>)')
     ipv6=$(dig +short AAAA "$domain" | head -n 1)
     content=$(echo "$content" | sed "s/<aaaa:$domain>/$ipv6/g")
+
+    # check if address is actually public
+    if [[ -n $(command -v "grepcidr") ]]; then
+        if [[ -z $(echo "$ipv6" | grepcidr -v "$local6") ]]; then
+            echo "IPv6 lookup for '$domain' failed, stopping"
+            exit 2
+        fi
+    fi
 fi
 
 # --- update regex ---

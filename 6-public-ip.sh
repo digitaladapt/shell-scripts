@@ -4,7 +4,7 @@
 # keep trying until we get a result
 
 # device info
-address=$(ip -6 addr list scope global | grep -v " fd" | sed -n 's/.*inet6 \([0-9a-f:]\+\).*/\1/p' | head -n 1)
+address=$(ip -6 addr list scope global | grep -v " fc" | grep -v " fd" | sed -n 's/.*inet6 \([0-9a-f:]\+\).*/\1/p' | head -n 1)
 
 # dig
 if [[ -z "$address" ]] && [[ -n $(command -v "dig") ]]; then
