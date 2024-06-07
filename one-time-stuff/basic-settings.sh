@@ -21,6 +21,11 @@ if [[ ! -f "$HOME/bin/6-public-ip.sh" ]]; then
     ln -s "$script_dir/6-public-ip.sh" "$HOME/bin/6-public-ip.sh"
 fi
 
+if [[ ! -f "$HOME/bin/docker-ps.sh" ]]; then
+    echo 'installing docker-ps.sh'
+    ln -s "$script_dir/docker-ps.sh" "$HOME/bin/docker-ps.sh"
+fi
+
 if [[ ! -f "$HOME/bin/enumerate.sh" ]]; then
     echo 'installing enumerate.sh'
     ln -s "$script_dir/enumerate.sh" "$HOME/bin/enumerate.sh"
