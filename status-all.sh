@@ -11,7 +11,7 @@
 
 # check for "-l" and "-h" in command prompt
 followLinks="-H"
-checkHidden="-not -path */.*/.git"
+checkHidden="-not -path '*/.*/.git'"
 while getopts "lh" option; do
     case $option in
         l)
