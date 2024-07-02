@@ -42,9 +42,16 @@ function process_git_status () {
     cd "$location"
     output=""
     info=$(git -c color.status=always status)
+    branch=$(git branch --show-current)
     remote=$(git remote -vv)
     upstream=$(git for-each-ref --format='%(upstream)' $(cat .git/HEAD))
     # 33 is yellow text
+
+    # show name of branch unless on main or dev (also ignore blank '', for detached head)
+    if [[ "$branch" != "" ]] && [[ "$branch" != "main" ]] && [[ "$branch" != "dev" ]]; then
+        # 1;34 is bright blue
+        output="$output\n[33m * [1;34m on branch '$branch' [0m"
+    fi
 
     # display any tracking issue, 43 is yellow background
     if [[ "$remote" == "" ]]; then
