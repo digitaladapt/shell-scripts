@@ -11,7 +11,7 @@
 
 # check for "-l" and "-h" in command prompt
 followLinks="-H"
-checkHidden="-not -path '*/.*/.git'"
+checkHidden="*/.*/.git"
 while getopts "lh" option; do
     case $option in
         l)
@@ -48,5 +48,5 @@ function process_git_list () {
 # and call process_git_list on each location that was found.
 # we then work on the folder that contained the ".git" folder.
 
-find "$followLinks" "$@" -type d -name ".git" $checkHidden | sort | while read -r file; do process_git_list "$file"; done
+find "$followLinks" "$@" -type d -name ".git" -not -path "$checkHidden" | sort | while read -r file; do process_git_list "$file"; done
 
