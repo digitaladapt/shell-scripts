@@ -36,7 +36,7 @@ fi
 function process_git_pull () {
     startedIn=`pwd`
     location=$(realpath $(dirname "$@"))
-    line="--- --- --- --- --- --- --- --- --- ---"
+    line="--- --- --- --- --- --- --- --- ---"
     # use "--" to tell printf there are no more commands, only strings to print
     printf -- "--- git pull %s %s ---\n" "$location" "${line:${#location}}"
     cd "$location"
