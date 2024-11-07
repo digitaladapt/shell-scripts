@@ -26,6 +26,11 @@ if [[ ! -f "$HOME/bin/docker-ps.sh" ]]; then
     ln -s "$script_dir/docker-ps.sh" "$HOME/bin/docker-ps.sh"
 fi
 
+if [[ ! -f "$HOME/bin/delay.sh" ]]; then
+    echo 'installing delay.sh'
+    ln -s "$script_dir/delay.sh" "$HOME/bin/delay.sh"
+fi
+
 if [[ ! -f "$HOME/bin/enumerate.sh" ]]; then
     echo 'installing enumerate.sh'
     ln -s "$script_dir/enumerate.sh" "$HOME/bin/enumerate.sh"
