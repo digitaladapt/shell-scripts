@@ -60,6 +60,8 @@ function process_git_status () {
         output="$output\n[33m * [30;43m on detached head [0m"
     elif [[ "$upstream" == "" ]]; then
         output="$output\n[33m * [30;43m on untracked branch [0m"
+    elif [[ "$info" == *"but the upstream is gone"* ]]; then
+        output="$output\n[33m * [30;43m on deleted branch [0m"
     fi
 
     # various file statuses
