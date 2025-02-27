@@ -426,6 +426,7 @@ case $set_vim in
     [Yy]* )
         echo 'Appending ~/.bashrc'
         (
+        sudo apt install vim-editorconfig
         cat << 'VIM'
 
 # ABS default to using vim

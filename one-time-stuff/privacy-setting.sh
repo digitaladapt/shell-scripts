@@ -5,7 +5,7 @@ read -p 'if using as a IPv6 enabled server, you probably want to turn that off? 
 case $fix_tempaddr in
     [Yy]* )
         echo 'Comment existing tempaddr settings'
-        sudo sed -i '/^\(net.ipv6.conf.all.use_tempaddr\|net.ipv6.conf.default.use_tempaddr)/s/^/# ABS #/' "/etc/sysctl.d/10-ipv6-privacy.conf"
+        sudo sed -i '/^\(net.ipv6.conf.all.use_tempaddr\|net.ipv6.conf.default.use_tempaddr\)/s/^/# ABS #/' "/etc/sysctl.d/10-ipv6-privacy.conf"
 
         echo 'Appending replacement tempaddr settings'
         (
