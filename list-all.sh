@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # perform a "git remote -vv" on each location specified (recursively), or current location if none specified.
 # git will quietly ignore any git repo stored in a folder you lack permission on.

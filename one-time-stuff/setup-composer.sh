@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # return to where we were when we started
 STARTED_IN=`pwd`

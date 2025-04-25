@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # make it easy for sudo calls to have access to key scripts
 
 # setup symlinks, if not installed in users bin directory

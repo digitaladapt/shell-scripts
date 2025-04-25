@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # identify-missing.sh ./* < file_list.txt
 # will list all files from file/input which is not present in the given loction.
 

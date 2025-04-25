@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # configure basic settings, will prompt for input
 
 # setup symlinks, if not installed in users bin directory

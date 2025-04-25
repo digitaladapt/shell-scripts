@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # there are a few different ways to resolve public-ip,
 # keep trying until we get a result

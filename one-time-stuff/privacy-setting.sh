@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "----- Disable IPv6 privacy settings? in sysctl -------"
 read -p 'if using as a IPv6 enabled server, you probably want to turn that off? [y/N]: ' fix_tempaddr

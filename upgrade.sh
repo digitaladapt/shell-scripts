@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "----- APT Update ------------------------------------"
 sudo apt update -y

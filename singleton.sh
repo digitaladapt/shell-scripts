@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # run the given command, but only if it's not already running.
 # singleton.sh long_running_script.sh --arguments --allowed
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # optionally takes a single argument of how long of a delay to take. defaults to 5 seconds.
 seconds=$1

@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # check https status code, for domain, and lookup ip address.
 # check-domain.sh www.example.com [example.org]
 

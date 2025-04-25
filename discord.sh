@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # discord colors are standard 6-digit hex, but converted to a base-10 integer
 # colors taken from https://xkcd.com/color/rgb/

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "----- Switch to secure ssh conf ---------------------"
 read -p 'Install the secure "sshd_config" file? [y/N]: ' secure_ssh

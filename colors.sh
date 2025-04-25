@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo "NOTE: when using in prompt (such as PS1), color escape codes"
 echo "should be \\[surrounded by escaped square brackets\\]"

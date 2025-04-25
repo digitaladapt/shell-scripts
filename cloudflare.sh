@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 quiet=false
 dryrun=false

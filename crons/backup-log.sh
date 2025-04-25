@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 backupDir="$1"
 backupType="$2"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # quickly generate a script file which will contain all crontab tasks.
 # optionally takes filename to use, defaults to 'crontasks.sh'.

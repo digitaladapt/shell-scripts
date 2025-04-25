@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 # install common software, will prompt before each step
 
 #echo "----- Use nginx straight from nginx.org -------------"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # prune the directory of matching files or subfolders,
 # until we only have the desired number of backups remaining.

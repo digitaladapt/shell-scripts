@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # degrees in Celsius which we regard as too high, defaults to config
 alertLevel="$1"

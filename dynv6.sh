@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 quiet=false
 while getopts 'q' flag; do

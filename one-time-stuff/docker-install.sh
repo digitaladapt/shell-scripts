@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 read -p "Add docker to apt sources and install docker? [y/N]: " response
 case $response in

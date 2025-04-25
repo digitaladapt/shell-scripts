@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -f "/var/run/reboot-required" ]; then
     echo "----- Reboot Needed ---------------------------------"

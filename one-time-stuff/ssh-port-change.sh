@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 echo 'Enter the desired new port for ssh to use, leave blank to abort.'
 read -p 'change ssh to operate on a different port then normal? [<new-port-number>]: ' change_port
