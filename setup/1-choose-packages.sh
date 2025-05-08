@@ -37,7 +37,7 @@ install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip un
 read -p 'Install Node.js v22? [y/N]: ' response
 case "${response}" in
     [Yy]* )
-        sudo "${script_dir}/../nodejs-install/nodesource_setup.sh"
+        sudo "${script_dir}/../nodesource/scripts/deb/setup_lts.x"
         sudo apt install nodejs -y
         ;;
     * )
@@ -48,40 +48,37 @@ echo ''
 
 # ----------------------------------------------------------
 
-echo "----- Install NodeJS Apps Yarn and HttpServer -------"
-read -p 'Install NodeJS Apps "yarn" and "http-server" globally? [y/N]: ' node_more
-case $node_more in
+read -p 'Install Node.js packages "yarn" and "http-server" globally? [y/N]: ' response
+case "${response}" in
     [Yy]* )
-        echo "----- Installing NodeJS 'yarn' globally -------------"
         sudo npm install --global yarn
-        echo "----- Installing NodeJS 'http-server' globally ------"
         sudo npm install --global http-server
-        echo "----- Completed NodeJS Apps -------------------------"
         ;;
     * )
         echo 'Skipping'
         ;;
 esac
+echo ''
 
-echo "----- Install Go Lang -------------------------------"
-read -p 'Install Go Lang? [y/N]: ' go_lang
-case $go_lang in
+# ----------------------------------------------------------
+
+read -p 'Install GoLang? [y/N]: ' response
+case "${response}" in
     [Yy]* )
-        echo "----- Determining current stable go version ---------"
+        sudo apt isntall jq -y
         # load json file with version info, filter to only stable versions, take the first (newest), strip to just numeric
+        version_flag=''
         go_version=$(wget --quiet --output-document - 'https://go.dev/dl/?mode=json' | jq -r '.[] | select( .stable ) | .version' | head -n 1 | sed 's/[^0-9.]*//g')
-        if [[ -n "$go_version" ]]; then
+        if [[ -n "${go_version}" ]]; then
             version_flag='--version'
-            echo "Installing Go Version: $go_version"
+            echo "Installing GoLand Version: ${go_version}"
         fi
 
-        echo "----- Calling Go Install Script ---------------------"
-        LOCATION=`dirname "$0"`
-        "${LOCATION}/../golang-install/goinstall.sh" "$version_flag" "$go_version"
-        echo "----- Completed Go Install Script -------------------"
+        "${script_dir}/../golang-install/goinstall.sh" "${version_flag}" "${go_version}"
         ;;
     * )
         echo 'Skipping'
         ;;
 esac
+echo ''
 
