@@ -34,6 +34,32 @@ install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip un
 
 # ----------------------------------------------------------
 
+install_collection 'Ruby: (ruby, build-essential)' ruby-full build-essential zlib1g-dev
+
+# ----------------------------------------------------------
+
+read -p 'Configure GEM_HOME and PATH for Ruby support? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        (
+        cat << 'BASHRC'
+
+# Install Ruby Gems to ~/gems
+export GEM_HOME="$HOME/gems"
+export PATH="$HOME/gems/bin:$PATH"
+
+BASHRC
+) >> "${HOME}/.bashrc"
+        show_note=true
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
 read -p 'Install Node.js v22? [y/N]: ' response
 case "${response}" in
     [Yy]* )
@@ -65,7 +91,7 @@ echo ''
 read -p 'Install GoLang? [y/N]: ' response
 case "${response}" in
     [Yy]* )
-        sudo apt isntall jq -y
+        sudo apt install jq -y
         # load json file with version info, filter to only stable versions, take the first (newest), strip to just numeric
         version_flag=''
         go_version=$(wget --quiet --output-document - 'https://go.dev/dl/?mode=json' | jq -r '.[] | select( .stable ) | .version' | head -n 1 | sed 's/[^0-9.]*//g')
@@ -81,4 +107,12 @@ case "${response}" in
         ;;
 esac
 echo ''
+
+# ----------------------------------------------------------
+
+if [ "${show_note}" = true ]; then
+    echo -e "\e[33mremember some changes will not take effect until you run:"
+    echo -e "\e[36msource ~/.bashrc\e[m"
+    echo ''
+fi
 
