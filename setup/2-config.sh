@@ -243,13 +243,53 @@ echo ''
 
 # ----------------------------------------------------------
 
-# TODO vim config
-# TODO if bashrc was edited, show "source to take effect now"...
+read -p 'Set VIM colors, config, and plugins? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        make_bashrc_backup
+        sudo apt install vim vim-editorconfig jq curl -y
+        ( cat << 'BASHRC'
 
+# ABS default to using vim
+export EDITOR=vim
+export VISUAL=vim
+# ABS less to render tabs as 4 characters
+export LESS=Rx4
 
+BASHRC
+) >> "${HOME}/.bashrc"
 
+        if [[ -f "${HOME}/.vimrc" ]] && [[ ! -f "${HOME}/vimrc.backup.${curdate}" ]]; then
+            mv "${HOME}/.vimrc" "${HOME}/vimrc.backup.${curdate}"
+        fi
 
+        [ ! -d "${HOME}/.vim/colors" ] && mkdir -p "${HOME}/.vim/colors"
+        [ ! -d "${HOME}/.vim/autoload" ] && mkdir -p "${HOME}/.vim/autoload"
 
+        # determine vim-plug latest version release tag
+        version=$(curl --silent 'https://api.github.com/repos/junegunn/vim-plug/releases/latest' | jq -r '.tag_name')
+        if [[ -z "$version" ]]; then
+            # fallback to main branch if needed
+            version="master"
+        fi
+        curl --output "${HOME}/.vim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/${version}/plug.vim"
 
+        cp "${script_dir}/config/vim-vimrc" "${HOME}/.vimrc"
+        cp "${script_dir}/config/vim-colorful256.vim" "${HOME}/.vim/colors/colorful256.vim"
 
+        vim +'PlugInstall --sync' +quitall
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
+if [ "${called_backup}" = true ]; then
+    echo -e "\e[33mremember some changes will not take effect until you run:"
+    echo -e "\e[36msource ~/.bashrc\e[m"
+    echo ''
+fi
 
