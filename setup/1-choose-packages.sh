@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+called_backup=false
 called_update=false
+curdate=$(date '+%Y-%m-%d')
 script_dir=$(dirname "$0")
+# absolute path to this scripts parent directory (package root)
+package_dir=$(readlink -f "$0" | xargs dirname | xargs dirname)
 
 # ----------------------------------------------------------
 
@@ -26,6 +30,39 @@ function install_collection () {
 
 # ----------------------------------------------------------
 
+# call this function before editing bashrc, will only make backup if needed
+function make_bashrc_backup () {
+    if [ "${called_backup}" = false ]; then
+        called_backup=true
+        if [[ ! -f "${HOME}/bashrc.backup.${curdate}" ]]; then
+            echo 'backing up existing bashrc'
+            cp "${HOME}/.bashrc" "${HOME}/bashrc.backup.${curdate}"
+        fi
+    fi
+}
+
+# ----------------------------------------------------------
+
+read -p 'Configure PATH for scripts in this package? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        make_bashrc_backup
+        ( cat << BASHRC
+
+# ABS include shell scripts
+export PATH="${package_dir}:\$PATH"
+
+BASHRC
+) >> "${HOME}/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
 install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
 
 # ----------------------------------------------------------
@@ -41,15 +78,15 @@ install_collection 'Ruby: (ruby, build-essential)' ruby-full build-essential zli
 read -p 'Configure GEM_HOME and PATH for Ruby support? [y/N]: ' response
 case "${response}" in
     [Yy]* )
+        make_bashrc_backup
         ( cat << 'BASHRC'
 
-# Install Ruby Gems to ~/gems
+# ABS configure ruby gems
 export GEM_HOME="$HOME/gems"
 export PATH="$HOME/gems/bin:$PATH"
 
 BASHRC
 ) >> "${HOME}/.bashrc"
-        show_note=true
         ;;
     * )
         echo 'Skipping'
@@ -90,6 +127,7 @@ echo ''
 read -p 'Install GoLang? [y/N]: ' response
 case "${response}" in
     [Yy]* )
+        make_bashrc_backup
         sudo apt install wget jq -y
         # load json file with version info, filter to only stable versions, take the first (newest), strip to just numeric
         version_flag=''

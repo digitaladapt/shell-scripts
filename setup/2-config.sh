@@ -3,6 +3,8 @@
 called_backup=false
 curdate=$(date '+%Y-%m-%d')
 script_dir=$(dirname "$0")
+# absolute path to this scripts parent directory (package root)
+package_dir=$(readlink -f "$0" | xargs dirname | xargs dirname)
 
 # ----------------------------------------------------------
 
@@ -23,18 +25,13 @@ read -p 'Install git-prompt and include in ~/.bashrc? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         make_bashrc_backup
-        sudo apt install wget jq -y
-        # make home bin folder if needed
-        [ ! -d "${HOME}/bin" ] && mkdir "${HOME}/bin"
-	# download git-prompt
-        wget 'https://raw.githubusercontent.com/git/git/master/contrib/completion/git-prompt.sh' -O "${HOME}/bin/git-prompt.sh" -q && ( cat << 'BASHRC'
+        ( cat << BASHRC
 
-# ABS git prompt
-source ~/bin/git-prompt.sh
+# ABS include git prompt
+source ${package_dir}/git-prompt.sh
 
 BASHRC
 ) >> "${HOME}/.bashrc"
-        chmod +x "${HOME}/bin/git-prompt.sh"
         ;;
     * )
         echo 'Skipping'
@@ -165,12 +162,12 @@ echo ''
 
 # ----------------------------------------------------------
 
-read -p 'Set "ssh" alias to ssh-ident"? (and set python3 as python) [y/N]: ' response
+read -p 'Set "ssh" symlink to "ssh-ident"? (and set python3 as python) [y/N]: ' response
 case "${response}" in
     [Yy]* )
         sudo apt install python-is-python3 -y
-        if [[ ! -f "${HOME}/bin/ssh" ]]; then
-            ln -s "${script_dir}/ssh-ident" "${HOME}/bin/ssh"
+        if [[ ! -f "${script_dir}/../ssh" ]]; then
+            ln -s './ssh-ident' "${script_dir}/../ssh"
         fi
         ;;
     * )
