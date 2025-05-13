@@ -147,7 +147,7 @@ echo ''
 
 # ----------------------------------------------------------
 
-if [ "${show_note}" = true ]; then
+if [ "${called_backup}" = true ]; then
     echo -e "\e[33mremember some changes will not take effect until you run:"
     echo -e "\e[36msource ~/.bashrc\e[m"
     echo ''
