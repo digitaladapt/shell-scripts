@@ -4,6 +4,7 @@ called_backup=false
 called_update=false
 curdate=$(date '+%Y-%m-%d')
 script_dir=$(dirname "$0")
+show_note=false
 # absolute path to this scripts parent directory (package root)
 package_dir=$(readlink -f "$0" | xargs dirname | xargs dirname)
 
@@ -68,6 +69,36 @@ install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl fail2b
 # ----------------------------------------------------------
 
 install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip unzip iftop colorized-logs php-cli ca-certificates gnupg lsb-release rclone
+
+# ----------------------------------------------------------
+
+read -p 'Install Docker? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        "${script_dir}/../docker-install/docker-install.sh"
+		sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
+read -p 'Add user to docker group? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        sudo groupadd docker
+        sudo usermod -aG docker "${USER}"
+        show_note=true
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
 
 # ----------------------------------------------------------
 
@@ -146,6 +177,11 @@ esac
 echo ''
 
 # ----------------------------------------------------------
+
+if [ "${show_note}" = true ]; then
+    echo -e "\e[33myou will need to logout and back in before the 'docker' group will show up"
+    echo ''
+fi
 
 if [ "${called_backup}" = true ]; then
     echo -e "\e[33mremember some changes will not take effect until you run:"
