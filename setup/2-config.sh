@@ -244,7 +244,9 @@ read -p 'Set VIM colors, config, and plugins? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         make_bashrc_backup
-        sudo apt install vim vim-editorconfig jq curl -y
+        if [[ -z $(command -v 'vim') ]] || [[ -z $(command -v 'curl') ]] || [[ -z $(command -v 'jq') ]]; then
+            sudo apt install vim curl jq -y
+        fi
         ( cat << 'BASHRC'
 
 # ABS default to using vim

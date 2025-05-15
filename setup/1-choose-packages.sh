@@ -72,14 +72,14 @@ install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip un
 
 # ----------------------------------------------------------
 
-if [[ -n $(command -v "php") ]]; then
+if [[ -n $(command -v 'php') ]]; then
     read -p 'Install PHP Composer? [y/N]: ' response
     case "${response}" in
         [Yy]* )
             return_dir=$(pwd)
             cd "${package_dir}"
             "${package_dir}/composer-install/composer-install.sh"
-            if [[ -f "composer.phar" ]]; then
+            if [[ -f 'composer.phar' ]]; then
                 sudo mv composer.phar /usr/bin/composer
             fi
             cd "${return_dir}"
@@ -127,7 +127,7 @@ install_collection 'Ruby: (ruby, build-essential)' ruby-full build-essential zli
 
 # ----------------------------------------------------------
 
-if [[ -n $(command -v "ruby") ]]; then
+if [[ -n $(command -v 'ruby') ]]; then
     read -p 'Configure GEM_HOME and PATH for Ruby support? [y/N]: ' response
     case "${response}" in
         [Yy]* )
@@ -164,17 +164,19 @@ echo ''
 
 # ----------------------------------------------------------
 
-read -p 'Install Node.js packages "yarn" and "http-server" globally? [y/N]: ' response
-case "${response}" in
-    [Yy]* )
-        sudo npm install --global yarn
-        sudo npm install --global http-server
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
-echo ''
+if [[ -n $(command -v 'npm') ]]; then
+    read -p 'Install Node.js packages "yarn" and "http-server" globally? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            sudo npm install --global yarn
+            sudo npm install --global http-server
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
 
 # ----------------------------------------------------------
 
@@ -182,10 +184,12 @@ read -p 'Install GoLang? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         make_bashrc_backup
-        sudo apt install wget jq -y
+        if [[ -z $(command -v 'curl') ]] || [[ -z $(command -v 'jq') ]]; then
+            sudo apt install curl jq -y
+        fi
         # load json file with version info, filter to only stable versions, take the first (newest), strip to just numeric
         version_flag=''
-        go_version=$(wget --quiet --output-document - 'https://go.dev/dl/?mode=json' | jq -r '.[] | select( .stable ) | .version' | head -n 1 | sed 's/[^0-9.]*//g')
+        go_version=$(curl --fail --silent --show-error 'https://go.dev/dl/?mode=json' | jq -r '.[] | select( .stable ) | .version' | head -n 1 | sed 's/[^0-9.]*//g')
         if [[ -n "${go_version}" ]]; then
             version_flag='--version'
             echo "Installing GoLand Version: ${go_version}"
