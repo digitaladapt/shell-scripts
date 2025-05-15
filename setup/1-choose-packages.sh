@@ -72,6 +72,27 @@ install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip un
 
 # ----------------------------------------------------------
 
+if [[ -n $(command -v "php") ]]; then
+    read -p 'Install PHP Composer? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            return_dir=$(pwd)
+            cd "${package_dir}"
+            "${package_dir}/composer-install/composer-install.sh"
+            if [[ -f "composer.phar" ]]; then
+                sudo mv composer.phar /usr/bin/composer
+            fi
+            cd "${return_dir}"
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
+
+# ----------------------------------------------------------
+
 read -p 'Install Docker? [y/N]: ' response
 case "${response}" in
     [Yy]* )
@@ -106,11 +127,12 @@ install_collection 'Ruby: (ruby, build-essential)' ruby-full build-essential zli
 
 # ----------------------------------------------------------
 
-read -p 'Configure GEM_HOME and PATH for Ruby support? [y/N]: ' response
-case "${response}" in
-    [Yy]* )
-        make_bashrc_backup
-        ( cat << 'BASHRC'
+if [[ -n $(command -v "ruby") ]]; then
+    read -p 'Configure GEM_HOME and PATH for Ruby support? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            make_bashrc_backup
+            ( cat << 'BASHRC'
 
 # ABS configure ruby gems
 export GEM_HOME="$HOME/gems"
@@ -118,12 +140,13 @@ export PATH="$HOME/gems/bin:$PATH"
 
 BASHRC
 ) >> "${HOME}/.bashrc"
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
-echo ''
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
 
 # ----------------------------------------------------------
 
