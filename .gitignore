@@ -2,5 +2,5 @@
 /config.sh
 /Config.ps1
 /crons/*.status
-/distinct/*.msg
+/unique/*.msg
 /ssh

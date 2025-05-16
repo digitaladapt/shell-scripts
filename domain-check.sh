@@ -4,28 +4,24 @@
 # check-domain.sh www.example.com [example.org]
 
 # check for "-v" in command prompt
-VERBOSE=false
-while getopts "v" OPTION; do
-    case $OPTION in
+verbose=false
+while getopts 'v' flag; do
+    case "$flag" in
         v)
-            VERBOSE=true
+            verbose=true
             ;;
     esac
 done
+shift "$((OPTIND-1))"
 
-if [ "$VERBOSE" = false ]; then
-    echo "use -v for verbose mode (to also get TTL)"
+if [ "$verbose" = false ]; then
+    echo "use -v for verbose mode (to also get DNS TTL)"
 fi
 
 function process_domain_list () {
     for domain in "$@"; do
-        # skip "-v" option if given
-        if [[ "$domain" == "-v" ]]; then
-            continue
-        fi
-
         # get current https status code from this domain
-        curl -s -o /dev/null --connect-timeout 0.5 -I -w "%{http_code} " "https://$domain/"
+        curl -s -o /dev/null --connect-timeout 0.5 -I -w '%{http_code} ' "https://$domain/"
 
         # we lookup the name-server for the base domain, and use that as our resolver
         # TODO need to fix, as this will not work with domains like: "example.co.uk"
@@ -37,7 +33,7 @@ function process_domain_list () {
         nameserver=$(dig +short NS $basedomain | head -n 1)
 
         # if verbose, we show full answer, instead of just the ip (adds TTL and Record Type)
-        if [ $VERBOSE = true ]; then
+        if [ $verbose = true ]; then
             output=$(dig @$nameserver +noall +answer $domain)
             printf "%-39.39s %5.5s %-2.2s %-10.10s %-39.39s\n" $output
         else
