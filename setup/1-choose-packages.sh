@@ -107,19 +107,20 @@ echo ''
 
 # ----------------------------------------------------------
 
-read -p 'Add user to docker group? [y/N]: ' response
-case "${response}" in
-    [Yy]* )
-        sudo groupadd docker
-        sudo usermod -aG docker "${USER}"
-        show_note=true
-        ;;
-    * )
-        echo 'Skipping'
-        ;;
-esac
-echo ''
-
+if [[ -n $(command -v 'docker') ]]; then
+    read -p 'Add user to docker group? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            sudo groupadd docker
+            sudo usermod -aG docker "${USER}"
+            show_note=true
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
 
 # ----------------------------------------------------------
 
