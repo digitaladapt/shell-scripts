@@ -64,7 +64,7 @@ echo ''
 
 # ----------------------------------------------------------
 
-install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl fail2ban git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
+install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
 
 # ----------------------------------------------------------
 
@@ -202,6 +202,21 @@ case "${response}" in
         ;;
 esac
 echo ''
+
+# ----------------------------------------------------------
+
+if [[ -n $(command -v 'go') ]]; then
+    read -p 'Install GoLang package "xcaddy"? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
 
 # ----------------------------------------------------------
 
