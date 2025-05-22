@@ -41,6 +41,9 @@ map <esc>OF <end>
 
 call plug#begin()
 
+" enable editorconfig support
+Plug 'editorconfig/editorconfig-vim'
+
 " highlight Caddyfile
 Plug 'isobit/vim-caddyfile'
 

@@ -4,7 +4,7 @@ read -p 'Install prerequisites (git, vim, curl, and jq)? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         # before we can begin, we need what should have already been installed
-        sudo apt install git vim vim-editorconfig curl jq -y
+        sudo apt install git vim curl jq -y
         ;;
     * )
         echo 'Skipping'
