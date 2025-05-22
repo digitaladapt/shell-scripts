@@ -274,7 +274,8 @@ BASHRC
         curl --output "${HOME}/.vim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/${version}/plug.vim"
 
         cp "${script_dir}/config/vim-vimrc" "${HOME}/.vimrc"
-        cp "${script_dir}/config/vim-colorful256.vim" "${HOME}/.vim/colors/colorful256.vim"
+        cp "${script_dir}/config/vim-colors/*" "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-autoload/*" "${HOME}/.vim/autoload/"
 
         vim +'PlugInstall --sync' +quitall
         ;;
