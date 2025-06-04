@@ -68,7 +68,7 @@ install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl git ht
 
 # ----------------------------------------------------------
 
-install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip unzip iftop colorized-logs php-cli ca-certificates gnupg lsb-release rclone
+install_collection 'extra utilities: (ncdu, zip, php, rclone, etc.)' ncdu zip unzip iftop colorized-logs php-cli php-curl ca-certificates gnupg lsb-release rclone
 
 # ----------------------------------------------------------
 
