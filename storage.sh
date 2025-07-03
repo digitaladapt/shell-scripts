@@ -2,6 +2,10 @@
 
 device="$1"
 
+if [[ -z "$device" ]]; then
+    device='/'
+fi
+
 usage=`df --output=pcent $device | tail -n 1 | grep -oE '[0-9]+'`
 open=`echo "100 - $usage" | bc`
 avail=`df --output=avail -h $device | tail -n 1`
