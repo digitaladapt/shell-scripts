@@ -27,11 +27,18 @@ for index in "${!STORAGE_ALERT[@]}"; do
     fi
 done
 
-title='Storage Update'
 if [[ "${warn}" = true ]]; then
-    purple='purple'
+    color='purple'
     title='Storage Alert'
+    touch "${HOME}/.storage.alert"
+elif [[ -f "${HOME}/.storage.alert" ]]; then
+    color='blue'
+    title='Storage Alert Resolved'
+    rm "${HOME}/.storage.alert"
+else
+    # no storage alerts, exit quietly
+    exit 0
 fi
 
-printf "%s\n" "${messages[@]}" | "${scriptRoot}/discord.sh" -c "${purple-blue}" -d 'Storage Alert' -t "${title}"
+printf "%s\n" "${messages[@]}" | "${scriptRoot}/discord.sh" -c "${color}" -t "${title}"
 
