@@ -11,6 +11,7 @@
 # LIGHT:  pink(#ff81c0),   apricot(#ffb16d), beige(#e6daa6),  mint(#9ffeb0),   lavender(#c79fef), white(#ffffff).
 
 scriptRoot=$(dirname "$0")
+alert=false
 quiet=false
 skipMsg=false
 declare -A colors
@@ -29,11 +30,11 @@ ansiColors=(
 )
 
 print_usage() {
-    echo "Usage: $0 [-h hook-url] [-c color] [-d [distinct-name]] [-t title] [-q] (message... | -z | < file.msg)"
+    echo "Usage: $0 [[-h hook-url] | -a] [-c color] [-d [distinct-name]] [-t title] [-q] (message... | -z | < file.msg)"
 }
 
 # handle all arguments provided
-while getopts ':h:c:d:t:zq' flag; do
+while getopts ':h:c:d:t:zaq' flag; do
     case "$flag" in
         h)
             if [[ "$OPTARG" == "http"*"?wait=true" ]]; then
@@ -84,6 +85,9 @@ while getopts ':h:c:d:t:zq' flag; do
         q)
             quiet=true
             ;;
+        a)
+            alert=true
+            ;;
         *)
             echo "unknown option provided '$flag'"
             print_usage
@@ -101,6 +105,10 @@ if [[ -f "$configFile" ]]; then
     botName="$DISCORD_SERVER_NAME"
     if [[ -z "$hookUrl" ]]; then
         hookUrl="$DISCORD_GENERAL_HOOK"
+
+        if [[ "$alert" = true ]]; then
+            hookUrl="$DISCORD_ALERT_HOOK"
+        fi
     fi
     if [[ -n "$title" ]]; then
         title="$title $DISCORD_TITLE_SUFFIX"

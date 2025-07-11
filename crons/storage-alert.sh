@@ -40,5 +40,5 @@ else
     exit 0
 fi
 
-printf "%s\n" "${messages[@]}" | "${scriptRoot}/discord.sh" -c "${color}" -t "${title}"
+printf "%s\n" "${messages[@]}" | "${scriptRoot}/discord.sh" -a -c "${color}" -t "${title}"
 

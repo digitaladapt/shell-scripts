@@ -26,4 +26,7 @@ CLOUDFLARE_FILTER_PREFIX="comment.contains=managed+by+$SERVER_DOMAIN&"
 DISCORD_SERVER_NAME="$SERVER_DOMAIN"
 DISCORD_TITLE_SUFFIX="· $DISCORD_SERVER_NAME"
 DISCORD_GENERAL_HOOK="<WEBHOOK_URL_HERE>?wait=true"
+# you can send alerts to a different channel, if desired
+# via "-a" also used by the "*-alert.sh" scripts in /crons/
+DISCORD_ALERT_HOOK="$DISCORD_GENERAL_HOOK"
 
