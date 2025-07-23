@@ -47,8 +47,8 @@ function process_git_status () {
     upstream=$(git for-each-ref --format='%(upstream)' $(cat .git/HEAD))
     # 33 is yellow text
 
-    # show name of branch unless on main or dev (also ignore blank '', for detached head)
-    if [[ "$branch" != "" ]] && [[ "$branch" != "main" ]] && [[ "$branch" != "dev" ]]; then
+    # show name of branch unless on main or dev or $hostname (also ignore blank '', for detached head)
+    if [[ "$branch" != "" ]] && [[ "$branch" != "main" ]] && [[ "$branch" != "dev" ]] && [[ "$branch" != "$HOSTNAME" ]]; then
         # 1;34 is bright blue
         output="$output\n[33m * [1;34m on branch '$branch' [0m"
     fi
