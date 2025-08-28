@@ -221,6 +221,23 @@ fi
 
 # ----------------------------------------------------------
 
+read -p 'Install ascii-image-converter? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        echo \
+            'deb [trusted=yes] https://apt.fury.io/ascii-image-converter/ /' | \
+            sudo tee /etc/apt/sources.list.d/ascii-image-converter.list > /dev/null
+            sudo apt update
+            sudo apt install -y ascii-image-converter
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
 if [ "${show_note}" = true ]; then
     echo -e "\e[33myou will need to logout and back in before the 'docker' group will show up"
     echo ''

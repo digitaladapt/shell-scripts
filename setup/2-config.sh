@@ -287,6 +287,28 @@ echo ''
 
 # ----------------------------------------------------------
 
+if [[ -n $(command -v 'ascii-image-converter') ]]; then
+    read -p 'Set up alias "show" to call ascii-image-converter? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            make_bashrc_backup
+            ( cat << 'TERM'
+
+# ABS make show command ASCII print the given file
+alias show='ascii-image-converter --color --braille --full --color-bg'
+
+TERM
+) >> "${HOME}/.bashrc"
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
+
+# ----------------------------------------------------------
+
 if [ "${called_backup}" = true ]; then
     echo -e "\e[33mremember some changes will not take effect until you run:"
     echo -e "\e[36msource ~/.bashrc\e[m"
