@@ -274,8 +274,14 @@ BASHRC
         curl --output "${HOME}/.vim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/${version}/plug.vim"
 
         cp "${script_dir}/config/vim-vimrc" "${HOME}/.vimrc"
-        cp "${script_dir}/config/vim-colors/*" "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-autoload/*" "${HOME}/.vim/autoload/"
+        cp "${script_dir}/config/vim-colors/colorful256.vim"    "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-colors/desertink.vim"      "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-colors/everforest.vim"     "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-colors/gruvbox.vim"        "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-colors/jellybeans.vim"     "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-colors/space-vim-dark.vim" "${HOME}/.vim/colors/"
+        cp "${script_dir}/config/vim-autoload/everforest.vim" "${HOME}/.vim/autoload/"
+        cp "${script_dir}/config/vim-autoload/gruvbox.vim"    "${HOME}/.vim/autoload/"
 
         vim +'PlugInstall --sync' +quitall
         ;;
