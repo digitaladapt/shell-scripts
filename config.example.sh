@@ -30,3 +30,8 @@ DISCORD_GENERAL_HOOK="<WEBHOOK_URL_HERE>?wait=true"
 # via "-a" also used by the "*-alert.sh" scripts in /crons/
 DISCORD_ALERT_HOOK="$DISCORD_GENERAL_HOOK"
 
+# used by sync-keys.sh
+GITEA_DOMAIN="<GITEA_DOMAIN>"
+GITEA_TOKEN="<API_TOKEN User:Read>"
+GITEA_FILTER=""
+
