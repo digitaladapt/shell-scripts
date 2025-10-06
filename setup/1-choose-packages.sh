@@ -124,6 +124,27 @@ fi
 
 # ----------------------------------------------------------
 
+if [[ -n $(command -v 'docker') ]]; then
+    read -p 'Create "public" docker network? [y/N]: ' response
+    case "${response}" in
+        [Yy]* )
+            # quietly run check to see if network has been created yet
+            docker network inspect public > /dev/null 2> /dev/null
+            if [[ "$?" -ne '0' ]]; then
+                docker network create public
+            else
+                echo 'docker network "public" already exists'
+            fi
+            ;;
+        * )
+            echo 'Skipping'
+            ;;
+    esac
+    echo ''
+fi
+
+# ----------------------------------------------------------
+
 install_collection 'Ruby: (ruby, build-essential)' ruby-full build-essential zlib1g-dev
 
 # ----------------------------------------------------------
