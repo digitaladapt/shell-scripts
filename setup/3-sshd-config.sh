@@ -4,10 +4,12 @@ script_dir=$(dirname "$0")
 
 # ----------------------------------------------------------
 
+echo 'WARNING: This script is designed to edit your sshd config, to make it more secure, but expects you have already setup your ~/.ssh/authroized_keys; and can sudo, as it will disable root login.'
+
 read -p 'Setup secure "sshd_config" file? [y/N]: ' response
 case "${response}" in
     [Yy]* )
-        mkdir -p "/etc/ssh/sshd_config.d"
+        sudo mkdir -p "/etc/ssh/sshd_config.d"
         sudo mv "/etc/ssh/sshd_config" "/etc/ssh/sshd_config.backup"
         sudo cp "${script_dir}/config/sshd-sshd_config.conf" "/etc/ssh/sshd_config.d/sshd_config.conf"
         sudo cp "${script_dir}/config/sshd-include.conf" "/etc/ssh/sshd_config"
@@ -24,7 +26,7 @@ read -p 'Restart SSH to use updated config? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         sudo systemctl restart ssh.service
-        echo -e "\e[33mremember to test ssh, ensure root login block, ensure user enaled"
+        echo -e "\e[33mremember to test ssh, ensure root login block, ensure user enabled"
         ;;
     * )
         echo 'Skipping'
