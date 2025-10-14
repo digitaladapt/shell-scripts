@@ -7,9 +7,10 @@ print_usage() {
     echo '"-t": test (dry-run) flag, display what would be updated, without committing the change'
     echo '"-q": quiet flag, to suppress "already set to" messages'
     echo '"-f": query filters, see: https://developers.cloudflare.com/api/operations/dns-records-for-a-zone-list-dns-records#Query-Parameters'
+    echo '"-c": create record, if no records match our query, we can create one, takes json object of record to make, see: https://developers.cloudflare.com/api/resources/dns/subresources/records/models/a_record/#(schema)'
     echo 'when using regular expressions, use "\1" for first capture group, no look-forward or look-behind, nor non-greedy wildcards'
     echo 'content can use the following tags: <a> <a:example.com> <aaaa> and <aaaa:example.com> which will be replaced with equivalent ip address, each domain tag can be used once'
-    echo "Usage: [token=<token-config-override>] [zone=<zone-config-override>] [prefix=<filter-prefix-override>] $0 [-q] [-f 'query-filters'] ('content' | 'regex-replace' 'regex-find')"
+    echo "Usage: [token=<token-config-override>] [zone=<zone-config-override>] [prefix=<filter-prefix-override>] $0 [-q] [-f 'query-filters'] [-c 'create-record-json'] ('content' | 'regex-replace' 'regex-find')"
 }
 
 # known private ranges
@@ -17,8 +18,11 @@ local4='192.168.0.0/16 172.16.0.0/12 10.0.0.0/8'
 local6='fc00::/7 fe80::/10'
 
 # handle all arguments provided
-while getopts 'f:qt' flag; do
+while getopts 'c:f:qt' flag; do
     case "$flag" in
+        c)
+            newRecord="$OPTARG"
+            ;;
         f)
             filters="$OPTARG"
             ;;
@@ -177,8 +181,20 @@ fi
 
 while read -r result; do
     if [[ -z "$result" ]]; then
-        echo 'No DNS Records found to update, stopping.'
-        exit 1
+        if [[ -n "$newRecord" ]]; then
+            create=$(curl --silent --request POST \
+                --url "https://api.cloudflare.com/client/v4/zones/$zone/dns_records" \
+                --header 'Content-Type: application/json' \
+                --header "Authorization: Bearer $token" \
+                --data "$newRecord" )
+
+            # display if successful, and any messages
+            echo "$create" | jq -r '.success,.messages[]'
+            exit 0
+        else
+            echo 'No DNS Records found to update, stopping.'
+            exit 1
+        fi
     fi
     # echo "$result" | jq -C '.'
 
