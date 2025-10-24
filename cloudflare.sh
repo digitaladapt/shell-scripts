@@ -189,8 +189,15 @@ while read -r result; do
                 --data "$newRecord" )
 
             # display if successful, and any messages
-            echo "$create" | jq -r '.success,.messages[]'
-            exit 0
+            success=$(echo "$create" | jq -r '.success,.messages[]')
+            domain=$(echo "$newRecord" | jq -r '.name')
+            if [[ "$success" == "true" ]]; then
+                echo "created $domain record"
+                exit 0
+            else
+                echo "failed to create $domain"
+                exit 1
+            fi
         else
             echo 'No DNS Records found to update, stopping.'
             exit 1

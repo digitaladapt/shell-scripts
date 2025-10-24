@@ -64,6 +64,28 @@ echo ''
 
 # ----------------------------------------------------------
 
+read -p 'Configure PATH for scripts in host services? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        make_bashrc_backup
+        mkdir "$HOME/host"
+        ( cat << 'BASHRC'
+
+# ABS include host bin folders
+host_bin=$(find "$HOME/host" -maxdepth 2 -type d -name bin | tr '\n' ':')
+export PATH="$host_bin$PATH"
+
+BASHRC
+) >> "${HOME}/.bashrc"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
 install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
 
 # ----------------------------------------------------------
