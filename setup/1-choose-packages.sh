@@ -94,6 +94,19 @@ install_collection 'extra utilities: (ncdu, mosh, zip, php, rclone, etc.)' ncdu 
 
 # ----------------------------------------------------------
 
+read -p 'Install NTFY Client? [y/N]: ' response
+case "${response}" in
+    [Yy]* )
+        "${script_dir}/../ntfy-install/ntfy-install.sh"
+        ;;
+    * )
+        echo 'Skipping'
+        ;;
+esac
+echo ''
+
+# ----------------------------------------------------------
+
 if [[ -n $(command -v 'php') ]]; then
     read -p 'Install PHP Composer? [y/N]: ' response
     case "${response}" in
