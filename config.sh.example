@@ -11,10 +11,10 @@ STORAGE_MONITOR=("/")
 # must declare associated array explicitly
 declare -A STORAGE_ALERT
 # storage in GiB
-STORAGE_ALERT=(["/"]=5)
+STORAGE_ALERT=(["/"]=10)
 
 # used by cloudflare.sh, discord.sh
-SERVER_DOMAIN=$(cat /etc/hostname)
+SERVER_DOMAIN=$(hostname)
 
 # used by cloudflare.sh
 # default is to only update dns records which have the comment "managed by <SERVER-HOSTNAME>"
