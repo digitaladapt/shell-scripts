@@ -90,7 +90,7 @@ install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl git ht
 
 # ----------------------------------------------------------
 
-install_collection 'extra utilities: (ncdu, mosh, zip, php, rclone, etc.)' ncdu mosh zip unzip iftop colorized-logs php-cli php-curl ca-certificates gnupg lsb-release rclone
+install_collection 'extra utilities: (ncdu, mosh, zip, php, rclone, btop, etc.)' ncdu mosh zip unzip iftop colorized-logs php-cli php-curl ca-certificates gnupg lsb-release rclone btop
 
 # ----------------------------------------------------------
 
