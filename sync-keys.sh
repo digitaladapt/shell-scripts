@@ -7,6 +7,8 @@
 # load in defaults from config
 scriptRoot=$(dirname "$0")
 configFile="$scriptRoot/config.sh"
+hostname=$(hostname)
+
 if [[ -f "$configFile" ]]; then
     source "$configFile"
 else
