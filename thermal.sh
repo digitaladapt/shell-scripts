@@ -15,6 +15,11 @@ fi
 
 # loop over all thermal zones
 while read -r mcFile; do
+    # we need something to work with
+    if [[ -z "$mcFile" ]]; then
+        continue;
+    fi
+
     # each zone has two files we use:
     # "./temp" <int> zone temp (milli-celsius)
     # "./type" <string> zone title
@@ -34,7 +39,7 @@ while read -r mcFile; do
         alertActive=1
     fi
 
-done <<< $(find /sys/class/thermal/thermal*/ -name 'temp')
+done <<< $(find /sys/class/thermal/*/* -path '*/thermal_*' -name 'temp')
 
 # we exit with a status code of 1 to indicate alert level has been reached
 if [[ "$alertActive" -eq 1 ]]; then

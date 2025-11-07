@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 
 scriptRoot="$(dirname "$0")/.."
+hostname=$(hostname)
 
-"${scriptRoot}/thermal.sh" | "${scriptRoot}/discord.sh" -c yellow -t 'Thermal Status'
+# get current status
+thermal=$(${scriptRoot}/thermal.sh)
+
+if [[ -n "$thermal" ]]; then
+    ntfy pub -T yellow_square -t "Thermal status on $hostname" thermal
+fi
 

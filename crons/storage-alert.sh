@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 locations="$@"
+hostname=$(hostname)
 
 # load in defaults from config
 scriptRoot="$(dirname "$0")/.."
@@ -29,16 +30,16 @@ done
 
 if [[ "${warn}" = true ]]; then
     color='purple'
-    title='Storage Alert'
+    title="Storage alert on $hostname"
     touch "${HOME}/.storage.alert"
 elif [[ -f "${HOME}/.storage.alert" ]]; then
     color='blue'
-    title='Storage Alert Resolved'
+    title="Storage resolved on $hostname"
     rm "${HOME}/.storage.alert"
 else
     # no storage alerts, exit quietly
     exit 0
 fi
 
-printf "%s\n" "${messages[@]}" | "${scriptRoot}/discord.sh" -a -c "${color}" -t "${title}"
+printf "%s\n" "${messages[@]}" | ntfy pub -T "${color}_square" -t "$title" storage
 

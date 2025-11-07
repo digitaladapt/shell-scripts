@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 locations="$@"
+hostname=$(hostname)
 
 # load in defaults from config
 scriptRoot="$(dirname "$0")/.."
@@ -13,5 +14,5 @@ if [[ -f "${configFile}" ]]; then
     fi
 fi
 
-"${scriptRoot}/df.sh" $locations | "${scriptRoot}/discord.sh" -c 'blue' -t 'Storage Status'
+"${scriptRoot}/df.sh" $locations | ntfy pub -T blue_square -t "Storage status on $hostname" storage
 
