@@ -36,16 +36,16 @@ oldSize=$(wc -l "${HOME}/.ssh/authorized_keys"     | cut -d ' ' -f 1)
 newSize=$(wc -l "${HOME}/.ssh/authorized_keys.new" | cut -d ' ' -f 1)
 
 # compare contents
-gitDiff=$(git diff --color --unified=0 "${HOME}/.ssh/authorized_keys" "${HOME}/.ssh/authorized_keys.new" | grep -vE '(\+\+\+|---|diff|index|@@)')
+theDiff=$(diff "${HOME}/.ssh/authorized_keys" "${HOME}/.ssh/authorized_keys.new" | grep '^[<>]')
 
 # ensure new is not-empty, check if different, log the change, and update the file
-if [[ "$newSize" -gt "0" ]] && [[ -n "$gitDiff" ]]; then
+if [[ "$newSize" -gt "0" ]] && [[ -n "$theDiff" ]]; then
     # backup existing authorized_keys, if one exists
     if [[ -f "${HOME}/.ssh/authorized_keys" ]]; then
         cp "${HOME}/.ssh/authorized_keys" "${HOME}/.ssh/authorized_keys.old"
     fi
 
     mv "${HOME}/.ssh/authorized_keys.new" "${HOME}/.ssh/authorized_keys"
-    echo "$gitDiff" | "$scriptRoot/discord.sh" -c 'white' -t 'Auth Keys Updated'
+    echo "$theDiff" | ntfy pub -T white_large_square -t "Auth-keys updated on $hostname" server-info
 fi
 
