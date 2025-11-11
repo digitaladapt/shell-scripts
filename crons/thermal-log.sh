@@ -7,6 +7,6 @@ hostname=$(hostname)
 thermal=$(${scriptRoot}/thermal.sh)
 
 if [[ -n "$thermal" ]]; then
-    ntfy pub -T yellow_square -t "Thermal status on $hostname" thermal
+    echo "$thermal" | ntfy pub -T yellow_square -t "Thermal status on $hostname" thermal
 fi
 
