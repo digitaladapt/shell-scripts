@@ -1,5 +1,31 @@
 #!/bin/bash
 
+# Send deprecation Warning
+node_deprecation_warning() {
+    log "
+===============================================================================
+                            DEPRECATION WARNING                            
+===============================================================================
+Node.js 18.x is no longer actively supported!
+You will not receive security or critical stability updates for this version.
+
+You should migrate to a supported version of Node.js as soon as possible.
+
+Please see https://nodesource.com/products/distributions for details about which
+version may be appropriate for you.
+
+The NodeSource Node.js distributions site contains
+information both about supported versions of Node.js and N|Solid supported Linux
+distributions. To learn more about usage, see:
+https://nodesource.com/products/distributions
+
+===============================================================================
+
+Continuing in 10 seconds ...
+" "error"
+    sleep 10
+}
+
 # Logger Function
 log() {
   local message="$1"
@@ -42,13 +68,13 @@ check_os() {
 install_pre_reqs() {
     log "Installing pre-requisites" "info"
 
-    # Run 'apt-get update'
-    if ! apt-get update -y; then
-        handle_error "$?" "Failed to run 'apt-get update'"
+    # Run 'apt update'
+    if ! apt update -y; then
+        handle_error "$?" "Failed to run 'apt update'"
     fi
 
-    # Run 'apt-get install'
-    if ! apt-get install -y apt-transport-https ca-certificates curl gnupg; then
+    # Run 'apt install'
+    if ! apt install -y apt-transport-https ca-certificates curl gnupg; then
         handle_error "$?" "Failed to install packages"
     fi
 
@@ -91,14 +117,14 @@ configure_repo() {
     echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
     echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
 
-    # Run 'apt-get update'
-    if ! apt-get update -y; then
-        handle_error "$?" "Failed to run 'apt-get update'"
+    # Run 'apt update'
+    if ! apt update -y; then
+        handle_error "$?" "Failed to run 'apt update'"
     else
         log "Repository configured successfully."
-        log "To install Node.js, run: apt-get install nodejs -y" "info"
+        log "To install Node.js, run: apt install nodejs -y" "info"
         log "You can use N|solid Runtime as a node.js alternative" "info"
-        log "To install N|solid Runtime, run: apt-get install nsolid -y \n" "success"
+        log "To install N|solid Runtime, run: apt install nsolid -y \n" "success"
     fi
 }
 
@@ -109,5 +135,6 @@ NODE_VERSION="18.x"
 check_os
 
 # Main execution
+node_deprecation_warning
 install_pre_reqs || handle_error $? "Failed installing pre-requisites"
 configure_repo "$NODE_VERSION" || handle_error $? "Failed configuring repository"
