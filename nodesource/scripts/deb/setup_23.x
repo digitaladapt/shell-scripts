@@ -42,13 +42,13 @@ check_os() {
 install_pre_reqs() {
     log "Installing pre-requisites" "info"
 
-    # Run 'apt-get update'
-    if ! apt-get update -y; then
-        handle_error "$?" "Failed to run 'apt-get update'"
+    # Run 'apt update'
+    if ! apt update -y; then
+        handle_error "$?" "Failed to run 'apt update'"
     fi
 
-    # Run 'apt-get install'
-    if ! apt-get install -y apt-transport-https ca-certificates curl gnupg; then
+    # Run 'apt install'
+    if ! apt install -y apt-transport-https ca-certificates curl gnupg; then
         handle_error "$?" "Failed to install packages"
     fi
 
@@ -75,8 +75,8 @@ configure_repo() {
     local node_version=$1
 
     arch=$(dpkg --print-architecture)
-    if [ "$arch" != "amd64" ] && [ "$arch" != "arm64" ] && [ "$arch" != "armhf" ]; then
-      handle_error "1" "Unsupported architecture: $arch. Only amd64, arm64, and armhf are supported."
+    if [ "$arch" != "amd64" ] && [ "$arch" != "arm64" ]; then
+      handle_error "1" "Unsupported architecture: $arch. Only amd64, arm64 are supported. Contact Nodesource for an extended support version https://nodesource.com/pages/contact-us.html."
     fi
 
     echo "deb [arch=$arch signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$node_version nodistro main" | tee /etc/apt/sources.list.d/nodesource.list > /dev/null
@@ -91,14 +91,14 @@ configure_repo() {
     echo "Pin: origin deb.nodesource.com" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
     echo "Pin-Priority: 600" | tee -a /etc/apt/preferences.d/nodejs > /dev/null
 
-    # Run 'apt-get update'
-    if ! apt-get update -y; then
-        handle_error "$?" "Failed to run 'apt-get update'"
+    # Run 'apt update'
+    if ! apt update -y; then
+        handle_error "$?" "Failed to run 'apt update'"
     else
         log "Repository configured successfully."
-        log "To install Node.js, run: apt-get install nodejs -y" "info"
+        log "To install Node.js, run: apt install nodejs -y" "info"
         log "You can use N|solid Runtime as a node.js alternative" "info"
-        log "To install N|solid Runtime, run: apt-get install nsolid -y \n" "success"
+        log "To install N|solid Runtime, run: apt install nsolid -y \n" "success"
     fi
 }
 

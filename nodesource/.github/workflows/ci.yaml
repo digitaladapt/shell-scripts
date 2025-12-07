@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [18, 20, 22, 23, 24]
-        os: ["ubuntu:24.04", "ubuntu:22.04", "debian:10"]
+        version: [ 18, 20, 22, 23, 24, 25 ]
+        os: [ "ubuntu:24.04", "ubuntu:22.04", "debian:10" ]
     container:
       image: ${{ matrix.os }}
     defaults:
@@ -27,35 +27,97 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
-      - name: Run Istallation Script
+      - name: Fix sources.list for Debian 10
+        if: contains(matrix.os, 'debian:10')
+        run: |
+          echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list
+          apt-get -o Acquire::Check-Valid-Until=false -o Acquire::AllowInsecureRepositories=true update
+
+      - name: Run Installation Script
         run: ./scripts/deb/setup_${{ matrix.version }}.x
 
       - name: Install Nodejs
-        run: |
-          apt-get install nodejs -y
+        run: apt install nodejs -y
 
       - name: Validate Node Version
         run: |
-          node -e "console.log(process.version)"
-          NODE_VERSION=$(node -e "console.log((process.version).split('.')[0])")
-          if [[ ${NODE_VERSION} != "v${{ matrix.version }}" ]]; then
-            echo "Node version is not ${{ matrix.version }}. It is $NODE_VERSION"
-            exit 1
-          fi
+         node -e "console.log(process.version)"
+         NODE_VERSION=$(node -e "console.log(process.version.split('.')[0])")
+        
+         if [[ ${NODE_VERSION} != "v${{ matrix.version }}" ]]; then
+          echo "Node version is not ${{ matrix.version }}. It is $NODE_VERSION"
+          exit 1
+         fi
 
-  rpm:
-    name: "NodeJS ${{ matrix.version }}(${{ matrix.os }})"
+  nsolid-deb:
+    name: "NSolid ${{ matrix.version }}(${{ matrix.os }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [18, 20, 22, 23, 24]
-        os: ["fedora:36", "amazonlinux:2023", "rockylinux:9", "redhat/ubi9:latest"]
+        version: [ 18, 20, 22, 24 ]
+        os: [ "ubuntu:24.04", "ubuntu:22.04", "debian:10" ]
     container:
       image: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Fix sources.list for Debian 10
+        if: contains(matrix.os, 'debian:10')
+        run: |
+          echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list
+          apt-get -o Acquire::Check-Valid-Until=false -o Acquire::AllowInsecureRepositories=true update
+
+      - name: Run Installation Script
+        run: ./scripts/deb/setup_${{ matrix.version }}.x
+
+      - name: Install NSolid
+        run: apt install nsolid -y
+
+      - name: Validate NSolid Version
+        run: |
+         nsolid -e "console.log(process.version)"
+         NSOLID_VERSION=$(nsolid -e "console.log(process.version.split('.')[0])")
+        
+         if [[ ${NSOLID_VERSION} != "v${{ matrix.version }}" ]]; then
+          echo "NSolid version is not ${{ matrix.version }}. It is $NSOLID_VERSION"
+          exit 1
+         fi
+
+  rpm:
+    name: "NodeJS ${{ matrix.version }}(${{ matrix.os }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [ 18, 20, 22, 23, 24, 25 ]
+        os: [ "fedora:36", "amazonlinux:2023", "rockylinux:9", "redhat/ubi9:latest" ]
+    container:
+      image: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Patch Rocky repos (avoid broken mirror)
+        if: contains(matrix.os, 'rocky')
+        run: |
+          set -euxo pipefail
+          for f in /etc/yum.repos.d/Rocky-*.repo; do
+            [ -f "$f" ] || continue
+            sed -i 's|^baseurl=.*|# baseurl disabled by CI|' "$f" || true
+            if grep -q '^mirrorlist=' "$f"; then
+              sed -i 's|^mirrorlist=.*|mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever|g' "$f" || true
+            else
+              echo 'mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever' >> "$f" || true
+            fi
+            if ! grep -qi '^skip_if_unavailable=' "$f"; then
+              echo 'skip_if_unavailable=True' >> "$f"
+            fi
+          done
+          (dnf clean all || microdnf clean all || true)
+          (dnf -y makecache || microdnf -y makecache || true)
       - name: install git
         run: |
           dnf update -y
@@ -80,19 +142,92 @@ jobs:
             exit 1
           fi
 
-  rpm-minimal:
-    name: "NodeJS ${{ matrix.version }}(${{ matrix.os }})"
+  nsolid-rpm:
+    name: "NSolid ${{ matrix.version }}(${{ matrix.os }})"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        version: [18, 20, 22, 23, 24]
-        os: ["rockylinux:9-minimal", "redhat/ubi9-minimal:latest"]
+        version: [ 18, 20, 22, 24 ]
+        os: [ "fedora:36", "amazonlinux:2023", "rockylinux:9", "redhat/ubi9:latest" ]
     container:
       image: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     steps:
+      - name: Patch Rocky repos (avoid broken mirror)
+        if: contains(matrix.os, 'rocky')
+        run: |
+          set -euxo pipefail
+          for f in /etc/yum.repos.d/Rocky-*.repo; do
+            [ -f "$f" ] || continue
+            sed -i 's|^baseurl=.*|# baseurl disabled by CI|' "$f" || true
+            if grep -q '^mirrorlist=' "$f"; then
+              sed -i 's|^mirrorlist=.*|mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever|g' "$f" || true
+            else
+              echo 'mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever' >> "$f" || true
+            fi
+            if ! grep -qi '^skip_if_unavailable=' "$f"; then
+              echo 'skip_if_unavailable=True' >> "$f"
+            fi
+          done
+          (dnf clean all || microdnf clean all || true)
+          (dnf -y makecache || microdnf -y makecache || true)
+      - name: install git
+        run: |
+          dnf update -y
+          dnf install git -y
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Run Installation Script
+        run: ./scripts/rpm/setup_${{ matrix.version }}.x
+
+      - name: Install NSolid
+        run: |
+          dnf install nsolid -y
+
+      - name: Validate NSolid Version
+        run: |
+          nsolid -e "console.log(process.version)"
+          NSOLID_VERSION=$(nsolid -e "console.log((process.version).split('.')[0])")
+          if [[ ${NSOLID_VERSION} != "v${{ matrix.version }}" ]]; then
+            echo "NSolid version is not ${{ matrix.version }}. It is $NSOLID_VERSION"
+            exit 1
+          fi
+
+  rpm-minimal:
+    name: "NodeJS ${{ matrix.version }}(${{ matrix.os }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [ 18, 20, 22, 23, 24, 25]
+        os: [ "rockylinux:9-minimal", "redhat/ubi9-minimal:latest" ]
+    container:
+      image: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Patch Rocky repos (avoid broken mirror)
+        if: contains(matrix.os, 'rocky')
+        run: |
+          set -euxo pipefail
+          for f in /etc/yum.repos.d/Rocky-*.repo; do
+            [ -f "$f" ] || continue
+            sed -i 's|^baseurl=.*|# baseurl disabled by CI|' "$f" || true
+            if grep -q '^mirrorlist=' "$f"; then
+              sed -i 's|^mirrorlist=.*|mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever|g' "$f" || true
+            else
+              echo 'mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever' >> "$f" || true
+            fi
+            if ! grep -qi '^skip_if_unavailable=' "$f"; then
+              echo 'skip_if_unavailable=True' >> "$f"
+            fi
+          done
+          (dnf clean all || microdnf clean all || true)
+          (dnf -y makecache || microdnf -y makecache || true)
       - name: install git
         run: |
           microdnf update -y
@@ -114,5 +249,60 @@ jobs:
           NODE_VERSION=$(node -e "console.log((process.version).split('.')[0])")
           if [[ ${NODE_VERSION} != "v${{ matrix.version }}" ]]; then
             echo "Node version is not ${{ matrix.version }}. It is $NODE_VERSION"
+            exit 1
+          fi
+
+  nsolid-rpm-minimal:
+    name: "NSolid ${{ matrix.version }}(${{ matrix.os }})"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [ 18, 20, 22, 24 ]
+        os: [ "rockylinux:9-minimal", "redhat/ubi9-minimal:latest" ]
+    container:
+      image: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Patch Rocky repos (avoid broken mirror)
+        if: contains(matrix.os, 'rocky')
+        run: |
+          set -euxo pipefail
+          for f in /etc/yum.repos.d/Rocky-*.repo; do
+            [ -f "$f" ] || continue
+            sed -i 's|^baseurl=.*|# baseurl disabled by CI|' "$f" || true
+            if grep -q '^mirrorlist=' "$f"; then
+              sed -i 's|^mirrorlist=.*|mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever|g' "$f" || true
+            else
+              echo 'mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=$repo&release=$releasever' >> "$f" || true
+            fi
+            if ! grep -qi '^skip_if_unavailable=' "$f"; then
+              echo 'skip_if_unavailable=True' >> "$f"
+            fi
+          done
+          (dnf clean all || microdnf clean all || true)
+          (dnf -y makecache || microdnf -y makecache || true)
+      - name: install git
+        run: |
+          microdnf update -y
+          microdnf install git -y
+
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Run Installation Script
+        run: ./scripts/rpm/setup_${{ matrix.version }}.x
+
+      - name: Install NSolid
+        run: |
+          microdnf install nsolid -y
+
+      - name: Validate NSolid Version
+        run: |
+          nsolid -e "console.log(process.version)"
+          NSOLID_VERSION=$(nsolid -e "console.log((process.version).split('.')[0])")
+          if [[ ${NSOLID_VERSION} != "v${{ matrix.version }}" ]]; then
+            echo "NSolid version is not ${{ matrix.version }}. It is $NSOLID_VERSION"
             exit 1
           fi
