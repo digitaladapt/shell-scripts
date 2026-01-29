@@ -86,7 +86,7 @@ echo ''
 
 # ----------------------------------------------------------
 
-install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron vim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
+install_collection 'core utilities: (curl, python3, jq, htop, etc.)' curl git htop jq grep gzip net-tools goaccess dnsutils bash-completion cron neovim make chrony build-essential gcc inotify-tools python3 python-is-python3 screen bc
 
 # ----------------------------------------------------------
 

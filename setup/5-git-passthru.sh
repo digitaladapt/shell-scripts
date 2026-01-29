@@ -36,10 +36,27 @@ echo ''
 groups git > /dev/null
 userExists="$?"
 
+# we need that directory to exist, if we are going to make the shell file
+sudo mkdir -p /home/git
+
+# create shell for git user, put in /usr/local/bin/git-shell
+echo 'creating custom git-shell'
+( cat << 'TERM'
+#!/bin/sh
+/usr/bin/docker exec -i --env SSH_ORIGINAL_COMMAND="$SSH_ORIGINAL_COMMAND" 'gitea' sh "$@"
+
+TERM
+) | sudo tee '/home/git/git-shell' > /dev/null
+
+# make it executable
+echo 'making custom git-shell executable'
+sudo chmod +x /home/git/git-shell
+
 # user doesn't exist yet, so create it, just the way we want it
 if [[ "$userExists" -ne "0" ]]; then
     echo 'create git user (locked password, custom shell, docker group)'
-    sudo useradd git -d /home/git -s /home/git/git-shell -m -U git -G docker
+
+    sudo useradd -d /home/git -s /home/git/git-shell -m -U -G docker git
 else
     # user exists, make sure it matches our expectations
     echo 'git user already exists'
@@ -70,23 +87,10 @@ else
     fi
 fi
 
-# create shell for git user, put in /usr/local/bin/git-shell
-echo 'creating custom git-shell'
-( cat << 'TERM'
-#!/bin/sh
-/usr/bin/docker exec -i --env SSH_ORIGINAL_COMMAND="$SSH_ORIGINAL_COMMAND" 'gitea' sh "$@"
-
-TERM
-) | sudo tee '/home/git/git-shell' > /dev/null
-
 # use custom docker container name, if provided one
 if [[ ! -z "$dockerContainer" ]]; then
     sudo sed -i "s/gitea/${dockerContainer}/g" /home/git/git-shell
 fi
-
-# make it executable
-echo 'making custom git-shell executable'
-sudo chmod +x /home/git/git-shell
 
 # update sshd config to allow the docker container to specify the list of authorized keys
 echo 'configuring sshd to check docker container for authorized keys for git user'

@@ -244,26 +244,26 @@ read -p 'Set VIM colors, config, and plugins? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         make_bashrc_backup
-        if [[ -z $(command -v 'vim') ]] || [[ -z $(command -v 'curl') ]] || [[ -z $(command -v 'jq') ]]; then
-            sudo apt install vim curl jq -y
+        if [[ -z $(command -v 'nvim') ]] || [[ -z $(command -v 'curl') ]] || [[ -z $(command -v 'jq') ]]; then
+            sudo apt install neovim curl jq -y
         fi
         ( cat << 'BASHRC'
 
-# ABS default to using vim
-export EDITOR=vim
-export VISUAL=vim
+# ABS default to using neovim
+export EDITOR=nvim
+export VISUAL=nvim
 # ABS less to render tabs as 4 characters
 export LESS=Rx4
 
 BASHRC
 ) >> "${HOME}/.bashrc"
 
-        if [[ -f "${HOME}/.vimrc" ]] && [[ ! -f "${HOME}/vimrc.backup.${curdate}" ]]; then
-            mv "${HOME}/.vimrc" "${HOME}/vimrc.backup.${curdate}"
+        if [[ -f "${HOME}/.config/nvim/init.vim" ]] && [[ ! -f "${HOME}/nvim-init.backup.${curdate}" ]]; then
+            mv "${HOME}/.config/nvim/init.vim" "${HOME}/nvim-init.backup.${curdate}"
         fi
 
-        [ ! -d "${HOME}/.vim/colors" ] && mkdir -p "${HOME}/.vim/colors"
-        [ ! -d "${HOME}/.vim/autoload" ] && mkdir -p "${HOME}/.vim/autoload"
+        [ ! -d "${HOME}/.config/nvim/colors" ] && mkdir -p "${HOME}/.config/nvim/colors"
+        [ ! -d "${HOME}/.config/nvim/autoload" ] && mkdir -p "${HOME}/.config/nvim/autoload"
 
         # determine vim-plug latest version release tag
         version=$(curl --silent 'https://api.github.com/repos/junegunn/vim-plug/releases/latest' | jq -r '.tag_name')
@@ -271,19 +271,19 @@ BASHRC
             # fallback to main branch if needed
             version="master"
         fi
-        curl --output "${HOME}/.vim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/${version}/plug.vim"
+        curl --output "${HOME}/.config/nvim/autoload/plug.vim" --silent "https://raw.githubusercontent.com/junegunn/vim-plug/${version}/plug.vim"
 
-        cp "${script_dir}/config/vim-vimrc" "${HOME}/.vimrc"
-        cp "${script_dir}/config/vim-colors/colorful256.vim"    "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-colors/desertink.vim"      "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-colors/everforest.vim"     "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-colors/gruvbox.vim"        "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-colors/jellybeans.vim"     "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-colors/space-vim-dark.vim" "${HOME}/.vim/colors/"
-        cp "${script_dir}/config/vim-autoload/everforest.vim" "${HOME}/.vim/autoload/"
-        cp "${script_dir}/config/vim-autoload/gruvbox.vim"    "${HOME}/.vim/autoload/"
+        cp "${script_dir}/config/vim-vimrc" "${HOME}/.config/nvim/init.vim"
+        cp "${script_dir}/config/vim-colors/colorful256.vim"    "${HOME}/.config/nvim/colors/"
+        cp "${script_dir}/config/vim-colors/desertink.vim"      "${HOME}/.config/nvim/colors/"
+        cp "${script_dir}/config/vim-colors/everforest.vim"     "${HOME}/.config/nvim/colors/"
+        cp "${script_dir}/config/vim-colors/gruvbox.vim"        "${HOME}/.config/nvim/colors/"
+        cp "${script_dir}/config/vim-colors/jellybeans.vim"     "${HOME}/.config/nvim/colors/"
+        cp "${script_dir}/config/vim-colors/space-vim-dark.vim" "${HOME}/.config/nvim/colors/"
+        cp "${script_dir}/config/vim-autoload/everforest.vim" "${HOME}/.config/nvim/autoload/"
+        cp "${script_dir}/config/vim-autoload/gruvbox.vim"    "${HOME}/.config/nvim/autoload/"
 
-        vim +'PlugInstall --sync' +quitall
+        nvim +'PlugInstall --sync' +quitall
         ;;
     * )
         echo 'Skipping'

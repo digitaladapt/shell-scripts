@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-read -p 'Install prerequisites (git, vim, curl, and jq)? [y/N]: ' response
+read -p 'Install prerequisites (git, neovim, curl, and jq)? [y/N]: ' response
 case "${response}" in
     [Yy]* )
         # before we can begin, we need what should have already been installed
-        sudo apt install git vim curl jq -y
+        sudo apt install git neovim curl jq -y
         ;;
     * )
         echo 'Skipping'
