@@ -129,7 +129,7 @@ case "${response}" in
         ( cat << 'TERM'
 
 # ABS gittree alias
-alias gittree='git log --all --decorate --oneline --graph'
+alias gittree='git log --graph --all --date=short --format="%C(magenta)%ad %C(auto)%h %C(cyan)<%aN>%C(auto)%d %s"'
 
 TERM
 ) >> "${HOME}/.bashrc"
