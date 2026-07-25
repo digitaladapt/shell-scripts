@@ -66,6 +66,12 @@ Plug 'airblade/vim-gitgutter'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 
+" twig support (php templating)
+Plug 'lumiliet/vim-twig'
+
+" AnsiEsc to make editing colorful files better
+Plug 'powerman/vim-plugin-AnsiEsc'
+
 call plug#end()
 
 " config git-gutter
