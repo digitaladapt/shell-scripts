@@ -46,7 +46,7 @@ function process_docker_pull () {
 
     quietDocker=$(docker compose pull --ignore-buildable --ignore-pull-failures)
 
-    if docker compose up -d --dry-run | grep -q "Recreate"; then
+    if docker compose up -d --dry-run 2>&1 | grep -q "Recreate"; then
         # Only restart services that were already running
         if ((${#runningServices[@]} > 0)); then
             echo "restarting the following services: ${runningServices[@]}"
