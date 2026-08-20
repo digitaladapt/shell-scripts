@@ -15,14 +15,87 @@ import requests
 GITEA_URL = "https://" + os.environ.get("GITEA_DOMAIN", "").rstrip("/")
 GITEA_TOKEN = os.environ.get("GITEA_TOKEN", "")
 USERNAME = os.environ.get("GITEA_ADMIN", "andrew")
+
 BRANCH = "main"
+TAG_PATTERN = "v*"
 
 # Number of repositories to request per API page.
 PAGE_SIZE = 50
 
 
 # ---------------------------------------------------------------------------
-# API helpers
+# Desired branch protection configuration
+#
+# Only fields listed here are managed by this script.
+# Other Gitea branch-protection settings are left untouched.
+# ---------------------------------------------------------------------------
+
+BRANCH_DESIRED = {
+    "rule_name": BRANCH,
+
+    # Direct pushes
+    "enable_push": True,
+    "enable_push_whitelist": True,
+    "push_whitelist_usernames": [USERNAME],
+    "push_whitelist_teams": [],
+    "push_whitelist_deploy_keys": False,
+
+    # Force pushes -- explicitly disabled
+    "enable_force_push": False,
+    "enable_force_push_whitelist": False,
+    "force_push_whitelist_usernames": [],
+    "force_push_whitelist_teams": [],
+    "force_push_whitelist_deploy_keys": False,
+
+    # Pull request approvals
+    "required_approvals": 1,
+    "enable_approvals_whitelist": True,
+    "approvals_whitelist_username": [USERNAME],
+    "approvals_whitelist_teams": [],
+
+    # Pull request merging
+    "enable_merge_whitelist": True,
+    "merge_whitelist_usernames": [USERNAME],
+    "merge_whitelist_teams": [],
+
+    # Status checks
+    "enable_status_check": False,
+    "status_check_contexts": [],
+}
+
+
+# ---------------------------------------------------------------------------
+# Gitea nullable branch-protection fields
+#
+# Gitea returns None for these fields when the corresponding whitelist
+# functionality is disabled. Treat those values as equivalent to the
+# explicit values above when comparing configurations.
+# ---------------------------------------------------------------------------
+
+BRANCH_NULL_EQUIVALENTS = {
+    "enable_force_push_whitelist": False,
+    "force_push_whitelist_usernames": [],
+    "force_push_whitelist_teams": [],
+    "force_push_whitelist_deploy_keys": False,
+}
+
+
+# ---------------------------------------------------------------------------
+# Desired tag protection configuration
+#
+# Tags matching TAG_PATTERN are protected. Only USERNAME may create/delete
+# those tags.
+# ---------------------------------------------------------------------------
+
+TAG_DESIRED = {
+    "name_pattern": TAG_PATTERN,
+    "whitelist_usernames": [USERNAME],
+    "whitelist_teams": [],
+}
+
+
+# ---------------------------------------------------------------------------
+# API session
 # ---------------------------------------------------------------------------
 
 session = requests.Session()
@@ -34,6 +107,8 @@ session.headers.update({
 
 
 def api(method, path, **kwargs):
+    """Make a request to the Gitea API."""
+
     url = f"{GITEA_URL}/api/v1{path}"
 
     response = session.request(method, url, **kwargs)
@@ -51,6 +126,50 @@ def api(method, path, **kwargs):
 
     return response.json()
 
+
+# ---------------------------------------------------------------------------
+# Value comparison
+# ---------------------------------------------------------------------------
+
+def values_equal(key, current, desired):
+    """
+    Compare a value returned by Gitea against the desired value.
+
+    Some Gitea branch-protection fields are returned as None when their
+    associated feature is disabled. Those fields are explicitly handled
+    above so that None and their configured disabled value are equivalent.
+    """
+
+    if current is None and key in BRANCH_NULL_EQUIVALENTS:
+        return desired == BRANCH_NULL_EQUIVALENTS[key]
+
+    return current == desired
+
+
+def describe_changes(current, desired, ignored=()):
+    """
+    Return human-readable descriptions of managed fields that differ.
+    """
+
+    changes = []
+
+    for key, wanted in desired.items():
+        if key in ignored:
+            continue
+
+        actual = current.get(key)
+
+        if not values_equal(key, actual, wanted):
+            changes.append(
+                f"{key}: {actual!r} -> {wanted!r}"
+            )
+
+    return changes
+
+
+# ---------------------------------------------------------------------------
+# Repository enumeration
+# ---------------------------------------------------------------------------
 
 def get_all_repositories():
     """Enumerate every repository the authenticated user can administer."""
@@ -81,8 +200,12 @@ def get_all_repositories():
     return repos
 
 
+# ---------------------------------------------------------------------------
+# Branch protection
+# ---------------------------------------------------------------------------
+
 def get_branch_protection(owner, repo):
-    """Return the existing protection for main, or None."""
+    """Return the existing protection for BRANCH, or None."""
 
     protections = api(
         "GET",
@@ -96,48 +219,9 @@ def get_branch_protection(owner, repo):
     return None
 
 
-# ---------------------------------------------------------------------------
-# Desired configuration
-# ---------------------------------------------------------------------------
+def describe_branch_protection(protection):
+    """Return a concise description of the current branch protection."""
 
-DESIRED = {
-    "rule_name": BRANCH,
-
-    # Direct pushes
-    "enable_push": True,
-    "enable_push_whitelist": True,
-    "push_whitelist_usernames": [USERNAME],
-    "push_whitelist_teams": [],
-    "push_whitelist_deploy_keys": False,
-
-    # Force pushes -- explicitly disabled
-    "enable_force_push": False,
-    "enable_force_push_whitelist": False,
-    "force_push_whitelist_usernames": [],
-    "force_push_whitelist_teams": [],
-    "force_push_whitelist_deploy_keys": False,
-
-    # Pull request approvals
-    "required_approvals": 1,
-    "enable_approvals_whitelist": True,
-    "approvals_whitelist_username": [USERNAME],
-    "approvals_whitelist_teams": [],
-
-    # Pull request merging
-    "enable_merge_whitelist": True,
-    "merge_whitelist_usernames": [USERNAME],
-    "merge_whitelist_teams": [],
-
-    # Explicitly disable status checks.
-    #
-    # Remove these two entries if you want to preserve whatever
-    # status-check configuration each repository currently has.
-    "enable_status_check": False,
-    "status_check_contexts": [],
-}
-
-
-def describe_current(protection):
     if protection is None:
         return "NO PROTECTION"
 
@@ -146,23 +230,16 @@ def describe_current(protection):
         f"push_allowlist={protection.get('push_whitelist_usernames')} "
         f"force_push={protection.get('enable_force_push')} "
         f"approvals={protection.get('required_approvals')} "
-        f"approval_allowlist={protection.get('approvals_whitelist_username')} "
-        f"merge_allowlist={protection.get('merge_whitelist_usernames')}"
+        f"approval_allowlist="
+        f"{protection.get('approvals_whitelist_username')} "
+        f"merge_allowlist="
+        f"{protection.get('merge_whitelist_usernames')}"
     )
 
 
-def needs_update(protection):
-    if protection is None:
-        return True
+def apply_branch_protection(owner, repo, existing):
+    """Create or update the branch protection."""
 
-    return any(
-        protection.get(key) != value
-        for key, value in DESIRED.items()
-        if key != "rule_name"
-    )
-
-
-def apply_protection(owner, repo, existing):
     encoded_owner = quote(owner)
     encoded_repo = quote(repo)
 
@@ -170,14 +247,15 @@ def apply_protection(owner, repo, existing):
         api(
             "POST",
             f"/repos/{encoded_owner}/{encoded_repo}/branch_protections",
-            json=DESIRED,
+            json=BRANCH_DESIRED,
         )
+
         return "CREATED"
 
-    # PATCH only the fields we explicitly manage.
+    # PATCH only the fields explicitly managed by this script.
     payload = {
         key: value
-        for key, value in DESIRED.items()
+        for key, value in BRANCH_DESIRED.items()
         if key != "rule_name"
     }
 
@@ -192,23 +270,95 @@ def apply_protection(owner, repo, existing):
 
 
 # ---------------------------------------------------------------------------
+# Tag protection
+# ---------------------------------------------------------------------------
+
+def get_tag_protection(owner, repo):
+    """Return the existing protection for TAG_PATTERN, or None."""
+
+    protections = api(
+        "GET",
+        f"/repos/{quote(owner)}/{quote(repo)}/tag_protections",
+    )
+
+    for protection in protections:
+        if protection.get("name_pattern") == TAG_PATTERN:
+            return protection
+
+    return None
+
+
+def describe_tag_protection(protection):
+    """Return a concise description of the current tag protection."""
+
+    if protection is None:
+        return "NO PROTECTION"
+
+    return (
+        f"users={protection.get('whitelist_usernames')} "
+        f"teams={protection.get('whitelist_teams')}"
+    )
+
+
+def apply_tag_protection(owner, repo, existing):
+    """Create or update the tag protection."""
+
+    encoded_owner = quote(owner)
+    encoded_repo = quote(repo)
+
+    if existing is None:
+        api(
+            "POST",
+            f"/repos/{encoded_owner}/{encoded_repo}/tag_protections",
+            json=TAG_DESIRED,
+        )
+
+        return "CREATED"
+
+    # PATCH only the fields explicitly managed by this script.
+    payload = {
+        key: value
+        for key, value in TAG_DESIRED.items()
+        if key != "name_pattern"
+    }
+
+    api(
+        "PATCH",
+        f"/repos/{encoded_owner}/{encoded_repo}/tag_protections/"
+        f"{quote(str(existing['id']))}",
+        json=payload,
+    )
+
+    return "UPDATED"
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Apply standardized Gitea main branch protection."
+        description=(
+            "Apply standardized Gitea branch and tag protection."
+        )
     )
 
     parser.add_argument(
         "--apply",
         action="store_true",
-        help="Actually modify repositories. Without this, only show what would happen.",
+        help=(
+            "Actually modify repositories. Without this, only show "
+            "what would happen."
+        ),
     )
 
     args = parser.parse_args()
 
-    if not GITEA_URL:
+    # -----------------------------------------------------------------------
+    # Validate configuration
+    # -----------------------------------------------------------------------
+
+    if not GITEA_URL or GITEA_URL == "https://":
         print("GITEA_DOMAIN is not set.", file=sys.stderr)
         sys.exit(1)
 
@@ -216,15 +366,24 @@ def main():
         print("GITEA_TOKEN is not set.", file=sys.stderr)
         sys.exit(1)
 
-    print(f"Gitea: {GITEA_URL}")
-    print(f"Branch: {BRANCH}")
-    print(f"User:   {USERNAME}")
+    # -----------------------------------------------------------------------
+    # Header
+    # -----------------------------------------------------------------------
+
+    print(f"Gitea:       {GITEA_URL}")
+    print(f"Branch:      {BRANCH}")
+    print(f"Tag pattern: {TAG_PATTERN}")
+    print(f"User:        {USERNAME}")
     print()
 
     if not args.apply:
         print("*** DRY RUN ***")
         print("Use --apply to actually make changes.")
         print()
+
+    # -----------------------------------------------------------------------
+    # Enumerate repositories
+    # -----------------------------------------------------------------------
 
     print("Enumerating repositories...")
 
@@ -233,10 +392,22 @@ def main():
     print(f"Found {len(repositories)} repositories.")
     print()
 
-    changed = 0
-    unchanged = 0
+    # -----------------------------------------------------------------------
+    # Counters
+    # -----------------------------------------------------------------------
+
+    branch_changed = 0
+    branch_unchanged = 0
+
+    tag_changed = 0
+    tag_unchanged = 0
+
     skipped = 0
     failed = 0
+
+    # -----------------------------------------------------------------------
+    # Process repositories
+    # -----------------------------------------------------------------------
 
     for repo in repositories:
         owner = repo["owner"]["login"]
@@ -244,36 +415,121 @@ def main():
 
         print(f"[{owner}/{name}]")
 
-        # Skip archived repositories because Gitea won't allow their
-        # branch protection to be modified.
+        # Archived repositories cannot have their protection modified.
         if repo.get("archived", False):
             print("  SKIP: archived")
             skipped += 1
+            print()
             continue
 
         try:
+            # ---------------------------------------------------------------
+            # Branch protection
+            # ---------------------------------------------------------------
+
             protection = get_branch_protection(owner, name)
 
-            print(f"  Current: {describe_current(protection)}")
-
-            if not needs_update(protection):
-                print("  OK: already matches")
-                unchanged += 1
-                continue
+            print(
+                f"  Branch: {describe_branch_protection(protection)}"
+            )
 
             if protection is None:
-                action = "CREATE"
-            else:
-                action = "UPDATE"
+                print(
+                    f"    Would CREATE protection for {BRANCH}"
+                )
 
-            print(f"  Would {action} protection for {BRANCH}")
+                if args.apply:
+                    result = apply_branch_protection(
+                        owner,
+                        name,
+                        protection,
+                    )
+                    print(f"    {result}")
 
-            if args.apply:
-                result = apply_protection(owner, name, protection)
-                print(f"  {result}")
-                changed += 1
+                branch_changed += 1
+
             else:
-                changed += 1
+                branch_changes = describe_changes(
+                    protection,
+                    BRANCH_DESIRED,
+                    ignored=("rule_name",),
+                )
+
+                if not branch_changes:
+                    print("    OK: already matches")
+                    branch_unchanged += 1
+
+                else:
+                    print(
+                        f"    Would UPDATE protection for {BRANCH}"
+                    )
+
+                    for change in branch_changes:
+                        print(f"      {change}")
+
+                    if args.apply:
+                        result = apply_branch_protection(
+                            owner,
+                            name,
+                            protection,
+                        )
+                        print(f"    {result}")
+
+                    branch_changed += 1
+
+            # ---------------------------------------------------------------
+            # Tag protection
+            # ---------------------------------------------------------------
+
+            tag_protection = get_tag_protection(owner, name)
+
+            print(
+                f"  Tags:   {describe_tag_protection(tag_protection)}"
+            )
+
+            if tag_protection is None:
+                print(
+                    f"    Would CREATE protection for {TAG_PATTERN}"
+                )
+
+                if args.apply:
+                    result = apply_tag_protection(
+                        owner,
+                        name,
+                        tag_protection,
+                    )
+                    print(f"    {result}")
+
+                tag_changed += 1
+
+            else:
+                tag_changes = describe_changes(
+                    tag_protection,
+                    TAG_DESIRED,
+                    ignored=("name_pattern",),
+                )
+
+                if not tag_changes:
+                    print("    OK: already matches")
+                    tag_unchanged += 1
+
+                else:
+                    print(
+                        f"    Would UPDATE protection for {TAG_PATTERN}"
+                    )
+
+                    for change in tag_changes:
+                        print(f"      {change}")
+
+                    if args.apply:
+                        result = apply_tag_protection(
+                            owner,
+                            name,
+                            tag_protection,
+                        )
+                        print(f"    {result}")
+
+                    tag_changed += 1
 
         except requests.HTTPError:
             print("  FAILED")
@@ -281,12 +537,21 @@ def main():
 
         print()
 
+    # -----------------------------------------------------------------------
+    # Summary
+    # -----------------------------------------------------------------------
+
     print("----------------------------------------")
-    print(f"Repositories: {len(repositories)}")
-    print(f"Changed:      {changed}")
-    print(f"Unchanged:    {unchanged}")
-    print(f"Skipped:      {skipped}")
-    print(f"Failed:       {failed}")
+    print(f"Repositories:      {len(repositories)}")
+    print()
+    print(f"Branch changed:    {branch_changed}")
+    print(f"Branch unchanged:  {branch_unchanged}")
+    print()
+    print(f"Tags changed:      {tag_changed}")
+    print(f"Tags unchanged:    {tag_unchanged}")
+    print()
+    print(f"Skipped:           {skipped}")
+    print(f"Failed:            {failed}")
 
     if not args.apply:
         print()
