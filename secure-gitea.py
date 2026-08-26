@@ -94,6 +94,20 @@ TAG_DESIRED = {
 }
 
 
+# When Gitea is installed with DISABLE_GIT_HOOKS=true (the default), the
+# git-hook API returns 403 for every repository regardless of who the token
+# belongs to -- even a site admin.  The pre-receive guard below cannot be
+# applied until an admin enables git hooks.  We detect this up front (once)
+# and skip all hook management so the run doesn't spam a 403 per repo.
+GIT_HOOKS_ENABLED = None  # True/False once probed; None = unknown
+
+# Sentinels the hook helpers raise (instead of requests.HTTPError) so that a
+# git-hook failure is isolated from branch/tag failures and never marks a
+# whole repository as FAILED.
+class HookNotWritable(Exception):
+    """Raised when the git-hook API rejects us (usually hooks disabled)."""
+
+
 # ---------------------------------------------------------------------------
 # Desired Git hook configuration
 #
@@ -436,6 +450,23 @@ def apply_tag_protection(owner, repo, existing):
 # Git hooks
 # ---------------------------------------------------------------------------
 
+def hook_request_allowed(response):
+    """Return True if the response means hooks are usable, False if the
+    server rejected the request (403 -> DISABLE_GIT_HOOKS), and raise if
+    the failure is something else we should surface."""
+
+    if response.ok:
+        return True
+
+    if response.status_code == 403:
+        # Gitea returns this when the authenticated user cannot manage git
+        # hooks, which happens whenever DISABLE_GIT_HOOKS is true (even for
+        # admins).  Treat it as "hooks disabled / not writable".
+        return False
+
+    return response.raise_for_status()
+
+
 def get_git_hook(owner, repo, hook_name):
     """
     Return the existing {hook_name} hook, or None if it is not set.
@@ -443,13 +474,21 @@ def get_git_hook(owner, repo, hook_name):
     Gitea returns is_active=false with empty content when the hook is not
     configured.  Treat that as "not set" so it is reported and applied
     like the branch/tag protections below.
+
+    Raises HookNotWritable when the git-hook API is not usable (e.g. git
+    hooks disabled), so callers can report it without failing the repo.
     """
 
-    hook = api(
-        "GET",
+    url = (
         f"/repos/{quote(owner)}/{quote(repo)}/hooks/git/"
-        f"{quote(hook_name)}",
+        f"{quote(hook_name)}"
     )
+    response = session.request("GET", f"{GITEA_URL}/api/v1{url}")
+
+    if not hook_request_allowed(response):
+        raise HookNotWritable(url)
+
+    hook = response.json()
 
     if not hook.get("is_active"):
         return None
@@ -469,13 +508,20 @@ def describe_git_hook(hook):
 def apply_git_hook(owner, repo, hook_name):
     """Set the hook content to the desired value."""
 
-    api(
-        "PATCH",
+    url = (
         f"/repos/{quote(owner)}/{quote(repo)}/hooks/git/"
-        f"{quote(hook_name)}",
+        f"{quote(hook_name)}"
+    )
+    response = session.request(
+        "PATCH",
+        f"{GITEA_URL}/api/v1{url}",
         json={"content": GIT_HOOKS[hook_name]},
     )
 
+    if not hook_request_allowed(response):
+        raise HookNotWritable(url)
+
+    response.raise_for_status()
     return "UPDATED"
 
 
@@ -540,6 +586,55 @@ def main():
     print()
 
     # -----------------------------------------------------------------------
+    # Probe whether the git-hook API is usable
+    # -----------------------------------------------------------------------
+
+    # Gitea returns 403 (even for admins) when DISABLE_GIT_HOOKS is true --
+    # the default.  Detect that once, up front, instead of failing every
+    # repo's hook step.  Use the first non-archived repo as the probe target.
+    # Initialize hooks_enabled before the probe so every code path has it.
+
+    hooks_enabled = True
+
+    probe_repo = next(
+        (r for r in repositories if not r.get("archived", False)),
+        None,
+    )
+
+    if probe_repo is None:
+        print("No editable repositories found; nothing to do.")
+        return
+
+    probe_owner = probe_repo["owner"]["login"]
+    probe_name = probe_repo["name"]
+
+    try:
+        get_git_hook(probe_owner, probe_name, "pre-receive")
+        print("Git hooks: enabled (git-hook API reachable)")
+    except HookNotWritable:
+        hooks_enabled = False
+        print(
+            "Git hooks: DISABLED/not writable -- pre-receive hook will be "
+            "skipped.  Enable git hooks in Gitea (DISABLE_GIT_HOOKS=false "
+            "+ admin) to use the pre-receive guard."
+        )
+    except requests.HTTPError:
+        # Some other API failure on the probe.  Don't assume hooks are
+        # disabled; just note we couldn't verify and continue per-repo.
+        print(
+            "Git hooks: could not verify (API error) -- will attempt per repo"
+        )
+        hooks_enabled = True
+    print()
+
+    if not hooks_enabled:
+        print(
+            "*** Git hooks are disabled; skipping the pre-receive hook step "
+            "for all repositories. Branch/tag protection is unaffected. ***"
+        )
+        print()
+
+    # -----------------------------------------------------------------------
     # Counters
     # -----------------------------------------------------------------------
 
@@ -551,6 +646,8 @@ def main():
 
     hook_changed = 0
     hook_unchanged = 0
+    hook_skipped = 0
+    hooks_enabled = True
 
     skipped = 0
     failed = 0
@@ -685,31 +782,55 @@ def main():
             # Pre-receive Git hook
             # ---------------------------------------------------------------
 
-            hook = get_git_hook(owner, name, "pre-receive")
+            if hooks_enabled:
+                try:
+                    hook = get_git_hook(owner, name, "pre-receive")
 
-            if hook is None:
-                print("  Hook:   NOT SET")
-                print("    Would SET pre-receive hook")
+                    if hook is None:
+                        print("  Hook:   NOT SET")
+                        print("    Would SET pre-receive hook")
 
-                if args.apply:
-                    result = apply_git_hook(owner, name, "pre-receive")
-                    print(f"    {result}")
+                        if args.apply:
+                            result = apply_git_hook(
+                                owner,
+                                name,
+                                "pre-receive",
+                            )
+                            print(f"    {result}")
 
-                hook_changed += 1
+                        hook_changed += 1
 
-            elif hook.get("content") == GIT_HOOKS["pre-receive"]:
-                print("  Hook:   SET (matches desired content)")
-                hook_unchanged += 1
+                    elif hook.get("content") == GIT_HOOKS["pre-receive"]:
+                        print(
+                            "  Hook:   SET (matches desired content)"
+                        )
+                        hook_unchanged += 1
+
+                    else:
+                        print("  Hook:   SET (content differs)")
+                        print("    Would UPDATE pre-receive hook")
+
+                        if args.apply:
+                            result = apply_git_hook(
+                                owner,
+                                name,
+                                "pre-receive",
+                            )
+                            print(f"    {result}")
+
+                        hook_changed += 1
+
+                except HookNotWritable:
+                    print(
+                        "  Hook:   SKIPPED (git hooks not writable)"
+                    )
+                    hook_skipped += 1
 
             else:
-                print("  Hook:   SET (content differs)")
-                print("    Would UPDATE pre-receive hook")
-
-                if args.apply:
-                    result = apply_git_hook(owner, name, "pre-receive")
-                    print(f"    {result}")
-
-                hook_changed += 1
+                print(
+                    "  Hook:   SKIPPED (git hooks disabled)"
+                )
+                hook_skipped += 1
 
         except requests.HTTPError:
             print("  FAILED")
@@ -732,6 +853,12 @@ def main():
     print()
     print(f"Hooks changed:     {hook_changed}")
     print(f"Hooks unchanged:   {hook_unchanged}")
+    if not hooks_enabled:
+        print(f"Hooks skipped:     {hook_skipped}  (git hooks disabled)")
+    elif hook_skipped:
+        print(f"Hooks skipped:     {hook_skipped}  (not writable)")
+    else:
+        print(f"Hooks skipped:     {hook_skipped}")
     print()
     print(f"Skipped:           {skipped}")
     print(f"Failed:            {failed}")
@@ -739,6 +866,11 @@ def main():
     if not args.apply:
         print()
         print("Dry run complete. Nothing was changed.")
+
+    # If the hook step had to be skipped (e.g. git hooks disabled), this run
+    # is only partially complete.  Exit non-zero so automation notices.
+    if not hooks_enabled or hook_skipped:
+        sys.exit(2)
 
 
 if __name__ == "__main__":
