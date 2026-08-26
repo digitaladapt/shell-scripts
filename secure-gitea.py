@@ -95,6 +95,106 @@ TAG_DESIRED = {
 
 
 # ---------------------------------------------------------------------------
+# Desired Git hook configuration
+#
+# The pre-receive hook refuses any push that would add/modify/delete files
+# under the workflow directories unless the ref is a trusted one (main / v*),
+# which is already locked down at the permission layer.  It is the
+# server-side backstop that makes it impossible for a feature-branch push to
+# smuggle in a workflow that could read secrets.
+#
+# Gitea stores this content at hooks/pre-receive.d/pre-receive.  The
+# generated hooks/pre-receive wrapper runs every executable file in that
+# directory, so setting this content is all that is needed for it to take
+# effect.  The API returns the content verbatim, so "already set properly"
+# is an exact-content match against this constant.
+# ---------------------------------------------------------------------------
+
+GIT_HOOKS = {
+    "pre-receive": r'''#!/usr/bin/env bash
+# ============================================================================
+#  pre-receive hook: "No workflow changes from untrusted branches"
+#
+#  WHERE:   Gitea Repo -> Settings -> Git Hooks -> "pre-receive" ->
+#           paste this -> Update.  (No restart needed; Gitea installs it
+#           server-side in hooks/pre-receive.d/ and its wrapper runs it.)
+#
+#  WHAT:    Any push that would ADD / MODIFY / DELETE files under the
+#           workflow directories is REJECTED before the ref is updated --
+#           UNLESS the ref is one of TRUSTED_REFS (main branch / v* tags),
+#           which you keep locked down at the permission layer.
+#
+#  WHY:     A workflow is code that runs with access to repo/org secrets.
+#           A feature-branch / PR push is untrusted input, so a workflow
+#           arriving that way must never exist server-side.  It can't leak
+#           secrets if it was never accepted.  Workflow changes can only
+#           land via main or a v* tag -- the refs you already protect.
+#
+#  NOTES:
+#   * Rejects ANY pushed history that touched the workflow dirs -- even an
+#     add-then-revert pair.  The server never records that content.  (If you
+#     later want "only the resulting tree matters", switch the existing-ref
+#     branch to a bare `git diff --name-only` and drop the `--not --all`
+#     history scan for new branches.)
+#   * Deletion of any ref is always allowed.
+# ============================================================================
+
+WORKFLOW_DIRS=( ".gitea/workflows" ".github/workflows" )   # paths to guard
+TRUSTED_REFS=( "refs/heads/main" "refs/tags/v*" )          # may touch them
+
+ZERO="0000000000000000000000000000000000000000"
+
+is_trusted() {
+    local ref="$1" pat
+    for pat in "${TRUSTED_REFS[@]}"; do
+        # shellcheck disable=SC2254
+        case "$ref" in $pat) return 0 ;; esac
+    done
+    return 1
+}
+
+# Prints (one per line) the workflow files a ref update would change.
+workflow_changes() {
+    local old="$1" new="$2"
+    local args=() i
+    for i in "${WORKFLOW_DIRS[@]}"; do
+        args+=( "$i" )
+    done
+
+    if [ "$old" = "$ZERO" ]; then
+        # New ref: only the commits this push actually introduces matter.
+        git log --format= --name-only --no-renames "$new" --not --all -- "${args[@]}" 2>/dev/null
+    else
+        # Existing ref: net diff between what is there and what will be.
+        git diff --name-only --no-renames "$old" "$new" -- "${args[@]}" 2>/dev/null
+    fi
+}
+
+rejected=0
+while read -r old new ref; do
+    [ -n "$ref" ] || continue
+    # deletion of a ref is always allowed
+    [ "$new" = "$ZERO" ] && continue
+    # trusted refs (main / v*) may modify workflows
+    is_trusted "$ref" && continue
+
+    changes="$(workflow_changes "$old" "$new")"
+    if [ -n "$changes" ]; then
+        echo "*** [pre-receive] PUSH REJECTED ***" >&2
+        echo "Ref '$ref' changes files under the workflow dirs, which is not allowed." >&2
+        echo "Workflow changes may only arrive via a trusted ref (main / v*):" >&2
+        printf '%s\n' "$changes" | sed 's/^/    /' >&2
+        echo "The push was not accepted; no refs were updated." >&2
+        rejected=1
+    fi
+done
+# shellcheck disable=SC2317
+exit "$rejected"
+''',
+}
+
+
+# ---------------------------------------------------------------------------
 # API session
 # ---------------------------------------------------------------------------
 
@@ -333,6 +433,53 @@ def apply_tag_protection(owner, repo, existing):
 
 
 # ---------------------------------------------------------------------------
+# Git hooks
+# ---------------------------------------------------------------------------
+
+def get_git_hook(owner, repo, hook_name):
+    """
+    Return the existing {hook_name} hook, or None if it is not set.
+
+    Gitea returns is_active=false with empty content when the hook is not
+    configured.  Treat that as "not set" so it is reported and applied
+    like the branch/tag protections below.
+    """
+
+    hook = api(
+        "GET",
+        f"/repos/{quote(owner)}/{quote(repo)}/hooks/git/"
+        f"{quote(hook_name)}",
+    )
+
+    if not hook.get("is_active"):
+        return None
+
+    return hook
+
+
+def describe_git_hook(hook):
+    """Return a concise description of the current hook state."""
+
+    if hook is None:
+        return "NOT SET"
+
+    return "SET"
+
+
+def apply_git_hook(owner, repo, hook_name):
+    """Set the hook content to the desired value."""
+
+    api(
+        "PATCH",
+        f"/repos/{quote(owner)}/{quote(repo)}/hooks/git/"
+        f"{quote(hook_name)}",
+        json={"content": GIT_HOOKS[hook_name]},
+    )
+
+    return "UPDATED"
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
@@ -401,6 +548,9 @@ def main():
 
     tag_changed = 0
     tag_unchanged = 0
+
+    hook_changed = 0
+    hook_unchanged = 0
 
     skipped = 0
     failed = 0
@@ -531,6 +681,36 @@ def main():
 
                     tag_changed += 1
 
+            # ---------------------------------------------------------------
+            # Pre-receive Git hook
+            # ---------------------------------------------------------------
+
+            hook = get_git_hook(owner, name, "pre-receive")
+
+            if hook is None:
+                print("  Hook:   NOT SET")
+                print("    Would SET pre-receive hook")
+
+                if args.apply:
+                    result = apply_git_hook(owner, name, "pre-receive")
+                    print(f"    {result}")
+
+                hook_changed += 1
+
+            elif hook.get("content") == GIT_HOOKS["pre-receive"]:
+                print("  Hook:   SET (matches desired content)")
+                hook_unchanged += 1
+
+            else:
+                print("  Hook:   SET (content differs)")
+                print("    Would UPDATE pre-receive hook")
+
+                if args.apply:
+                    result = apply_git_hook(owner, name, "pre-receive")
+                    print(f"    {result}")
+
+                hook_changed += 1
+
         except requests.HTTPError:
             print("  FAILED")
             failed += 1
@@ -549,6 +729,9 @@ def main():
     print()
     print(f"Tags changed:      {tag_changed}")
     print(f"Tags unchanged:    {tag_unchanged}")
+    print()
+    print(f"Hooks changed:     {hook_changed}")
+    print(f"Hooks unchanged:   {hook_unchanged}")
     print()
     print(f"Skipped:           {skipped}")
     print(f"Failed:            {failed}")
